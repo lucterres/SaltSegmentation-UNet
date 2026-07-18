@@ -1,0 +1,16 @@
+# Pesos de modelos treinados (arquivos grandes)
+results/**/*.pth
+
+# Histórico e curvas (gerados automaticamente)
+results/**/curves.png
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Imagens sintéticas geradas (reproduzíveis via generate_synthetic.py)
+Salt-Segmentation-UNet/dataset/synthetic/
+
+# Output de treino original do repo base (não nosso)
+Salt-Segmentation-UNet/output/

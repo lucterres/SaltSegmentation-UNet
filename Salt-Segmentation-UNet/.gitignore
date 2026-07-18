@@ -1,0 +1,7 @@
+*.zip
+__pycache__
+dataset/train/images
+dataset/train/masks
+*.pth
+*.txt
+test.png
