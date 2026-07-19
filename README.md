@@ -35,6 +35,8 @@ experiment-downstream/
 
 ### 1 — Baixar o dataset TGS
 
+está em D:\dataset\tgs-salt
+
 ```powershell
 # Opção A: Kaggle CLI
 kaggle competitions download -c tgs-salt-identification-challenge

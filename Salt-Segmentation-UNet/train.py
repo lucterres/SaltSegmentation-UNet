@@ -216,7 +216,7 @@ def main():
         # -- train --
         model.train()
         train_loss = 0.0
-        for imgs, masks in tqdm(train_loader, desc=f'E{epoch}/{args.epochs} train', leave=False):
+        for imgs, masks in tqdm(train_loader, desc=f'E{epoch}/{args.epochs} train', leave=False, ascii=True, ncols=80):
             imgs, masks = imgs.to(config.DEVICE), masks.to(config.DEVICE)
             loss = loss_fn(model(imgs), masks)
             optimizer.zero_grad(); loss.backward(); optimizer.step()
@@ -265,7 +265,7 @@ def main():
     # -----------------------------------------------------------------------
     # 7. Final test evaluation (best checkpoint)
     # -----------------------------------------------------------------------
-    model.load_state_dict(torch.load(best_ckpt, map_location=config.DEVICE))
+    model.load_state_dict(torch.load(best_ckpt, map_location=config.DEVICE, weights_only=True))
     model.eval()
     iou_acc = dice_acc = nb = 0.0
     with torch.no_grad():

@@ -1,5 +1,5 @@
 # Pesos de modelos treinados (arquivos grandes)
-results/**/*.pth
+results/scenario*
 
 # Histórico e curvas (gerados automaticamente)
 results/**/curves.png
