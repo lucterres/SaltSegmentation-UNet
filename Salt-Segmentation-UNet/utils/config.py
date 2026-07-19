@@ -1,32 +1,59 @@
 import os
+
 import torch
 
-DATASET_PATH = os.path.join('dataset', 'train')
+# ---------------------------------------------------------------------------
+# Dataset paths — TGS Salt Identification Challenge
+# ---------------------------------------------------------------------------
+TGS_PATH           = r'D:\dataset\tgs-salt\train'
+IMAGE_DATASET_PATH = os.path.join(TGS_PATH, 'images')
+MASK_DATASET_PATH  = os.path.join(TGS_PATH, 'masks')
 
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, 'images')
-MASK_DATASET_PATH = os.path.join(DATASET_PATH, 'masks')
+SYNTH_IMAGE_PATH = os.path.join('dataset', 'synthetic', 'images')
+SYNTH_MASK_PATH  = os.path.join('dataset', 'synthetic', 'masks')
 
-TEST_SPLIT = .15
+# Fixed test-set path list (written once, shared across all runs)
+TEST_PATHS = os.path.join('output', 'test_paths.txt')
 
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+# ---------------------------------------------------------------------------
+# Split
+# ---------------------------------------------------------------------------
+TEST_SPLIT = 0.20   # 800 test / 3200 train (from ~4000 total)
+VAL_SPLIT  = 0.10   # 10% of train → validation during training
 
+# ---------------------------------------------------------------------------
+# Hardware
+# ---------------------------------------------------------------------------
+DEVICE     = 'cuda' if torch.cuda.is_available() else 'cpu'
 PIN_MEMORY = DEVICE == 'cuda'
 
-NUM_CHANNELS = 1
-NUM_CLASSES = 1
-NUM_LEVELS = 3
+# ---------------------------------------------------------------------------
+# Model
+# ---------------------------------------------------------------------------
+NUM_CHANNELS = 1   # TGS is grayscale
+NUM_CLASSES  = 1
 
-LR = 1e-3
-EPOCHS = 40
-BATCH_SIZE = 64
+# U-Net channel progression: (in, enc1, enc2, enc3)
+ENCODER_CHANNELS = (1, 16, 32, 64)
+DECODER_CHANNELS = (64, 32, 16)
 
-INPUT_IMAGE_WIDTH = 128
+# ---------------------------------------------------------------------------
+# Training
+# ---------------------------------------------------------------------------
+LR         = 1e-4
+EPOCHS     = 50
+BATCH_SIZE = 16
+THRESHOLD  = 0.5
+EARLY_STOP_PATIENCE = 10  # stop if val-IoU doesn't improve for N epochs
+
+# ---------------------------------------------------------------------------
+# Input size  (101 → pad/resize to 128 for clean MaxPool2d divisions)
+# ---------------------------------------------------------------------------
 INPUT_IMAGE_HEIGHT = 128
+INPUT_IMAGE_WIDTH  = 128
 
-THRESHOLD = .5
-
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
 BASE_OUTPUT = 'output'
-
-MODEL_PATH = os.path.join(BASE_OUTPUT, 'UNet_tgs_salt.pth')
-PLOT_PATH = os.path.sep.join([BASE_OUTPUT, 'plot.png'])
-TEST_PATHS = os.path.sep.join([BASE_OUTPUT, 'test_paths.txt'])
+PLOT_PATH   = os.path.join(BASE_OUTPUT, 'plot.png')
