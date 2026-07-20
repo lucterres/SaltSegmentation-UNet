@@ -17,7 +17,6 @@ from imutils import paths
 from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import DataLoader
-
 from utils import config
 from utils.dataset import SegmentationDataset, get_transforms
 from utils.model import UNet
