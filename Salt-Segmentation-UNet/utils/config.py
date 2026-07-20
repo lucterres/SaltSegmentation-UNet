@@ -5,7 +5,7 @@ import torch
 # ---------------------------------------------------------------------------
 # Dataset paths — TGS Salt Identification Challenge
 # ---------------------------------------------------------------------------
-TGS_PATH           = r'D:\dataset\tgs-salt\train'
+TGS_PATH           = '/var/tmp/cym7/datasets/tgs-salt/train'
 IMAGE_DATASET_PATH = os.path.join(TGS_PATH, 'images')
 MASK_DATASET_PATH  = os.path.join(TGS_PATH, 'masks')
 
