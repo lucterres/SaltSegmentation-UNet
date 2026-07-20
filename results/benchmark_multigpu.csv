@@ -1,0 +1,3 @@
+config,mean_it_s,std_it_s,speedup,batch_size,epochs,max_steps,n_gpus_available
+1 GPU,34.582,3.668,1.0,32,3,50,8
+2 GPUs (DataParallel),32.045,5.464,0.9266,32,3,50,8
