@@ -2,6 +2,10 @@
 
 **Manuscrito:** Access-2026-27912  
 **Objetivo:** Demonstrar que treinar com dados reais + sintéticos melhora a segmentação de salt domes em dados reais de teste, em comparação com treinar apenas com dados reais.
+1. Estimar desempenho com maximo trainemnto 4000 amostras. depois 8000 com data aumentation
+2. comparar com dados sinteticos gerados por transformações geometricas e outras formas de data augmentation
+3. Rodar o experimento com 800 + 800
+
 
 ---
 
