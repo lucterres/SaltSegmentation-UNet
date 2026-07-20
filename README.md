@@ -39,7 +39,10 @@ experiment-downstream/
 
 ### 1 — Baixar o dataset TGS
 
-está em D:\dataset\tgs-salt
+Para Atena 
+- o dataset estará disponível no remoto em: /var/tmp/cym7/datasets/tgs-salt/
+
+
 
 ```powershell
 # Opção A: Kaggle CLI

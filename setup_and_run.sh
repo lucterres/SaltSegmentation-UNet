@@ -1,163 +1,201 @@
 #!/bin/bash
-# setup_and_run.sh — Configure environment and run all experiment runs on remote GPU
+# setup_and_run.sh — Configura ambiente e executa todos os experimentos no servidor remoto
 #
-# Usage:
-#   1. Copy this script and the experiment code to the remote machine:
-#        scp -r experiment-downstream/ user@remote-host:~/R2.1-experiment/
-#        scp setup_and_run.sh user@remote-host:~/R2.1-experiment/
+# Adaptado para: atn2b02n07 (8× Tesla V100-SXM2-32GB, CUDA 12.9, driver 575)
 #
-#   2. On the remote machine:
-#        chmod +x setup_and_run.sh
-#        ./setup_and_run.sh
+# Usage (rodar no servidor remoto):
+#   chmod +x setup_and_run.sh
+#   ./setup_and_run.sh
 #
-# Requirements on remote machine:
-#   - conda (miniforge/miniconda)
-#   - CUDA driver >= 525 (for cu126)
-#   - kaggle API token at ~/.kaggle/kaggle.json (for dataset download)
-#     OR dataset already at $TGS_DIR
+# Pré-requisitos no servidor:
+#   - Dataset TGS já em: /var/tmp/cym7/datasets/tgs-salt/
+#   - Python 3.8 (Miniconda base) disponível em:
+#     /cenpes/projetos30/cym7/Miniconda3/bin/python
 #
-# Results will be in: ~/R2.1-experiment/results/
+# O venv será criado em: /var/tmp/cym7/venvs/salt-unet/  (SSD NVMe local)
+# Resultados em:         $SCRIPT_DIR/results/
 
 set -e  # exit on error
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$SCRIPT_DIR/Salt-Segmentation-UNet"
 RESULTS_DIR="$SCRIPT_DIR/results"
-ENV_NAME="r21_exp"
+
+# Dataset já transferido para o SSD local
+TGS_SRC="/var/tmp/cym7/datasets/tgs-salt"
 TGS_DIR="$WORK_DIR/dataset/tgs"
 SYNTH_DIR="$WORK_DIR/dataset/synthetic"
 
+# venv no SSD local (rápido, sem NFS)
+VENV_DIR="/var/tmp/cym7/venvs/salt-unet"
+PYTHON_BASE="/cenpes/projetos30/cym7/Miniconda3/bin/python"
+PIP="$VENV_DIR/bin/pip"
+PYTHON="$VENV_DIR/bin/python"
+
 echo "============================================"
 echo " R2.1 Downstream Segmentation Experiment"
-echo " Work dir : $WORK_DIR"
-echo " Results  : $RESULTS_DIR"
+echo " Servidor  : $(hostname)"
+echo " Work dir  : $WORK_DIR"
+echo " Results   : $RESULTS_DIR"
+echo " venv      : $VENV_DIR"
 echo "============================================"
 
 # ---------------------------------------------------------------------------
-# 1. Create conda environment
+# 1. Criar venv e instalar dependências
 # ---------------------------------------------------------------------------
 echo ""
-echo "[1/5] Setting up conda environment: $ENV_NAME"
+echo "[1/5] Configurando ambiente Python"
 
-if conda env list | grep -q "^$ENV_NAME "; then
-    echo "  → Environment already exists, skipping creation"
+if [ -f "$PYTHON" ]; then
+    echo "  → venv já existe em $VENV_DIR"
 else
-    conda create -n "$ENV_NAME" python=3.11 -y
+    echo "  → Criando venv com $($PYTHON_BASE --version)..."
+    "$PYTHON_BASE" -m venv "$VENV_DIR"
+    "$PIP" install --upgrade pip --quiet
+    echo "  → venv criado"
 fi
 
-# Install PyTorch (CUDA 12.6 — compatible with A100/H100 drivers)
-conda run -n "$ENV_NAME" pip install \
-    torch==2.7.1+cu126 torchvision==0.22.1+cu126 \
-    --index-url https://download.pytorch.org/whl/cu126
+# Verificar se torch+CUDA já está instalado corretamente
+TORCH_OK=$("$PYTHON" -c "import torch; print('ok' if '+cu' in torch.__version__ else 'rocm')" 2>/dev/null || echo "missing")
 
-# Install other dependencies
-conda run -n "$ENV_NAME" pip install \
-    opencv-python imutils scikit-learn pandas scipy tqdm matplotlib kaggle
+if [ "$TORCH_OK" = "ok" ]; then
+    echo "  → PyTorch+CUDA já instalado: $("$PYTHON" -c 'import torch; print(torch.__version__)')"
+else
+    echo "  → Instalando PyTorch 2.4.1+cu124 (JFrog interno)..."
+    # JFrog PyPI interno já configurado em ~/.pip/pip.conf
+    "$PIP" install --quiet \
+        "torch==2.4.1+cu124" \
+        "torchvision==0.19.1+cu124"
+    echo "  → PyTorch instalado"
+fi
 
-echo "  → Environment ready"
+# Instalar demais dependências
+echo "  → Instalando dependências do requirements.txt..."
+"$PIP" install --quiet \
+    "opencv-python-headless>=4.7.0" \
+    "imutils>=0.5.4" \
+    "scikit-learn>=1.2.0" \
+    "pandas>=2.0.0" \
+    "scipy>=1.10.0" \
+    "numpy>=1.24.0" \
+    "tqdm>=4.65.0" \
+    "matplotlib>=3.7.0"
 
-# Verify CUDA
-conda run -n "$ENV_NAME" python -c "
+# Verificar CUDA
+echo ""
+"$PYTHON" -c "
 import torch
-print(f'  torch: {torch.__version__}')
-print(f'  cuda:  {torch.cuda.is_available()}')
-print(f'  gpu:   {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"NONE\"}')
+print(f'  torch   : {torch.__version__}')
+print(f'  cuda    : {torch.cuda.is_available()}')
+if torch.cuda.is_available():
+    print(f'  gpu[0]  : {torch.cuda.get_device_name(0)}')
+    print(f'  gpus    : {torch.cuda.device_count()}')
 "
+echo "  → Ambiente pronto"
 
 # ---------------------------------------------------------------------------
-# 2. Download TGS dataset
+# 2. Preparar dataset TGS
 # ---------------------------------------------------------------------------
 echo ""
-echo "[2/5] Checking TGS dataset"
+echo "[2/5] Verificando dataset TGS"
 
-if [ -d "$TGS_DIR/images" ] && [ "$(ls -1 $TGS_DIR/images/*.png 2>/dev/null | wc -l)" -gt 3000 ]; then
-    echo "  → Dataset already present ($(ls -1 $TGS_DIR/images/*.png | wc -l) images)"
+N_IMAGES=$(ls -1 "$TGS_DIR/images/"*.png 2>/dev/null | wc -l)
+N_MASKS=$(ls -1 "$TGS_DIR/masks/"*.png 2>/dev/null | wc -l)
+
+if [ "$N_IMAGES" -ge 3000 ] && [ "$N_MASKS" -ge 3000 ]; then
+    echo "  → Dataset já presente: $N_IMAGES imagens, $N_MASKS máscaras"
 else
-    echo "  → Downloading TGS Salt Identification Challenge dataset..."
+    echo "  → Copiando dataset de $TGS_SRC ..."
     mkdir -p "$TGS_DIR"
-    conda run -n "$ENV_NAME" kaggle competitions download \
-        -c tgs-salt-identification-challenge \
-        -p "$TGS_DIR"
-    echo "  → Extracting..."
-    cd "$TGS_DIR"
-    unzip -q tgs-salt-identification-challenge.zip
-    # Move train/images and train/masks to TGS_DIR root
-    if [ -d "train/images" ]; then
-        mv train/images ./images
-        mv train/masks  ./masks
-        rm -rf train test *.zip *.csv 2>/dev/null || true
+
+    # O dataset TGS tem imagens e máscaras na estrutura:
+    #   tgs-salt/train/images/*.png  e  tgs-salt/train/masks/*.png
+    if [ -d "$TGS_SRC/train/images" ]; then
+        cp -r "$TGS_SRC/train/images" "$TGS_DIR/images"
+        cp -r "$TGS_SRC/train/masks"  "$TGS_DIR/masks"
+    elif [ -d "$TGS_SRC/images" ]; then
+        cp -r "$TGS_SRC/images" "$TGS_DIR/images"
+        cp -r "$TGS_SRC/masks"  "$TGS_DIR/masks"
+    else
+        echo "  ERRO: estrutura inesperada em $TGS_SRC"
+        ls "$TGS_SRC"
+        exit 1
     fi
-    cd "$SCRIPT_DIR"
-    echo "  → Dataset ready: $(ls -1 $TGS_DIR/images/*.png | wc -l) images"
+    echo "  → Dataset pronto: $(ls -1 $TGS_DIR/images/*.png | wc -l) imagens"
 fi
 
-# Update config.py with the correct TGS path
-sed -i "s|TGS_PATH.*=.*|TGS_PATH = '$TGS_DIR'|g" "$WORK_DIR/utils/config.py"
-echo "  → config.py updated: TGS_PATH = $TGS_DIR"
+# Atualizar paths no config.py
+sed -i "s|TGS_PATH\s*=.*|TGS_PATH = '$TGS_DIR'|g" "$WORK_DIR/utils/config.py"
+sed -i "s|SYNTH_PATH\s*=.*|SYNTH_PATH = '$SYNTH_DIR'|g" "$WORK_DIR/utils/config.py"
+echo "  → config.py: TGS_PATH=$TGS_DIR"
 
 # ---------------------------------------------------------------------------
-# 3. Generate synthetic pool (400 images) — Scenario B
+# 3. Gerar pool sintético (Cenário B) — 400 imagens
 # ---------------------------------------------------------------------------
 echo ""
-echo "[3/5] Generating synthetic pool for Scenario B"
+echo "[3/5] Gerando pool sintético para o Cenário B"
 
-if [ -d "$SYNTH_DIR/images" ] && [ "$(ls -1 $SYNTH_DIR/images/*.png 2>/dev/null | wc -l)" -ge 400 ]; then
-    echo "  → Synthetic pool already present ($(ls -1 $SYNTH_DIR/images/*.png | wc -l) images)"
+N_SYNTH=$(ls -1 "$SYNTH_DIR/images/"*.png 2>/dev/null | wc -l)
+if [ "$N_SYNTH" -ge 400 ]; then
+    echo "  → Pool sintético já presente ($N_SYNTH imagens)"
 else
-    echo "  → Running generate_synthetic.py (n=400)..."
-    echo "  → NOTE: Point --vae_ckpt to your VAE checkpoint if available"
-    echo "  →       Without checkpoint, random masks will be used (for testing)"
-    conda run -n "$ENV_NAME" python "$WORK_DIR/generate_synthetic.py" \
+    echo "  → Rodando generate_synthetic.py (n=400)..."
+    cd "$WORK_DIR"
+    "$PYTHON" generate_synthetic.py \
         --n 400 \
         --out "$SYNTH_DIR" \
         --tgs_dir "$TGS_DIR"
-    echo "  → Synthetic pool ready"
+    echo "  → Pool sintético pronto"
+    cd "$SCRIPT_DIR"
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Run all training scenarios
+# 4. Executar todos os treinamentos
 # ---------------------------------------------------------------------------
 echo ""
-echo "[4/5] Running experiments"
+echo "[4/5] Executando experimentos"
 mkdir -p "$RESULTS_DIR"
 
 cd "$WORK_DIR"
 
 SEEDS=(42 123 456)
 SCENARIOS=(A B)
-TOTAL=${#SEEDS[@]}
 COUNT=0
 
 for SCENARIO in "${SCENARIOS[@]}"; do
     for SEED in "${SEEDS[@]}"; do
         COUNT=$((COUNT + 1))
         RUN_TAG="scenario_${SCENARIO}_seed${SEED}"
+        LOG="$RESULTS_DIR/${RUN_TAG}_log.txt"
+
         echo ""
-        echo "  [$COUNT/6] Scenario $SCENARIO | Seed $SEED → $RUN_TAG"
+        echo "  [$COUNT/6] Cenário $SCENARIO | Seed $SEED → $RUN_TAG"
 
         if [ -f "$RESULTS_DIR/$RUN_TAG/result.csv" ]; then
-            echo "  → Already done, skipping"
+            echo "  → Já concluído, pulando"
             continue
         fi
 
         START=$(date +%s)
-        conda run -n "$ENV_NAME" python -u train.py \
+        "$PYTHON" -u train.py \
             --scenario "$SCENARIO" \
             --seed "$SEED" \
-            2>&1 | tee "$RESULTS_DIR/${RUN_TAG}_log.txt"
+            2>&1 | tee "$LOG"
         END=$(date +%s)
-        echo "  → Done in $((END - START))s"
+        echo "  → Concluído em $((END - START))s"
     done
 done
 
 # ---------------------------------------------------------------------------
-# 5. Consolidate results
+# 5. Consolidar resultados
 # ---------------------------------------------------------------------------
 echo ""
-echo "[5/5] Consolidating results"
-conda run -n "$ENV_NAME" python -u evaluate.py
+echo "[5/5] Consolidando resultados"
+cd "$WORK_DIR"
+"$PYTHON" -u evaluate.py --results_dir "$RESULTS_DIR"
+
 echo ""
 echo "============================================"
-echo " DONE — results at: $RESULTS_DIR/summary.csv"
+echo " CONCLUÍDO — resultados em: $RESULTS_DIR/summary.csv"
 echo "============================================"
-cat "$RESULTS_DIR/summary.csv" 2>/dev/null || echo "(summary.csv not yet available)"
+cat "$RESULTS_DIR/summary.csv" 2>/dev/null || echo "(summary.csv ainda não disponível)"
