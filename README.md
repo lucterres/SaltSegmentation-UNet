@@ -23,6 +23,34 @@
 
 ---
 
+## Execução local — Ryzen 7 8700G (Windows)
+
+| Item | Detalhe |
+|------|---------|
+| **Máquina** | Workstation local Windows |
+| **CPU** | AMD Ryzen 7 8700G (iGPU integrada) |
+| **Conda env** | `unet-salt` (`C:\Users\lucia\miniconda3\envs\unet-salt`) |
+| **Dataset TGS** | `D:\dataset\tgs-salt\train\` |
+| **Código** | `D:\0Code\_phdSeismic\Segmentation-Unet-Experiment\Salt-Segmentation-UNet\` |
+
+### Como executar localmente
+
+```powershell
+# Definir dataset local via variável de ambiente
+$env:TGS_PATH = "D:\dataset\tgs-salt\train"
+
+# Entrar no diretório do projeto
+cd "D:\0Code\_phdSeismic\Segmentation-Unet-Experiment\Salt-Segmentation-UNet"
+
+# Treinar Cenário A — real only (ex: 800 amostras, 10 épocas)
+conda run -n unet-salt python -u train.py --scenario A --seed 42 --n_real 800 --epochs 10
+```
+
+> **Nota:** O `config.py` lê `TGS_PATH` via `os.environ.get('TGS_PATH', ...)`.  
+> Se a variável não for definida, usa o caminho padrão do servidor Atena.
+
+---
+
 ## Estrutura da pasta
 
 ```
@@ -182,7 +210,7 @@ nohup python -u train.py --scenario A --seed 42 --n_real 2000 --epochs 100 > $PR
 
 > **Nota:** o `train.py` cria o diretório `results/<run_tag>/` automaticamente antes de salvar artefatos.
 > O redirecionamento do log para esse mesmo diretório mantém logs e artefatos colocalizados:
-> ```
+> ``` 
 > results/scenario_A_seed42/
 > ├── train.log        ← saída completa do treinamento
 > ├── best_model.pth   ← checkpoint da melhor época (val IoU)
