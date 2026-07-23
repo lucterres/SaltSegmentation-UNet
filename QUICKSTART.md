@@ -17,36 +17,23 @@ ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
 ## 2. Verificar / preparar o ambiente
 
 ```bash
-# Verificar se o venv já está no SSD local
-ls /var/tmp/cym7/venvs/salt-unet/bin/python && echo "VENV OK" || echo "AUSENTE"
-
-# Verificar dataset
-ls /var/tmp/cym7/datasets/tgs-salt/train/images/ | wc -l  # deve ser 3998
+bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
 ```
 
-### Se o venv estiver AUSENTE — restaurar do backup (home NFS):
+O script verifica (sem modificar nada):
+- ✅ Dataset local (`/var/tmp/cym7/datasets/tgs-salt/train/images/` — esperado: 3998 imagens)
+- ✅ Venv (`/var/tmp/cym7/venvs/salt-unet/`) — Python, PyTorch e CUDA
+- ✅ GPUs disponíveis via `nvidia-smi`
 
-```bash
-mkdir -p /var/tmp/cym7/venvs
-cp -r /u/cym7/venvs_backup/salt-unet /var/tmp/cym7/venvs/
-
-PYTHON_BIN=$(which python3)
-sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" \
-  /var/tmp/cym7/venvs/salt-unet/pyvenv.cfg
-```
-
-### Se o dataset estiver AUSENTE — extrair do tar:
-
-```bash
-mkdir -p /var/tmp/cym7/datasets
-tar -xf ~/datasets/tgs-salt/tgs-salt.tar -C /var/tmp/cym7/datasets/
-```
-
-### Ou usar o script completo de setup:
+**Se algum item aparecer como AUSENTE**, execute o setup completo:
 
 ```bash
 bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
 ```
+
+O `setup_node_Atena.sh` restaura automaticamente:
+1. Dataset — extrai de `~/datasets/tgs-salt/tgs-salt.tar` → `/var/tmp/cym7/datasets/`
+2. Venv — copia de `/u/cym7/venvs_backup/salt-unet/` → `/var/tmp/cym7/venvs/` e corrige `pyvenv.cfg`
 
 ---
 
