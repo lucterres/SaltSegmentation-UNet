@@ -1,4 +1,4 @@
-# Experimento Downstream — R2.1
+﻿# Experimento Downstream — R2.1
 
 **Manuscrito:** Access-2026-27912  
 **Objetivo:** Demonstrar que treinar com dados reais + sintéticos melhora a segmentação de salt domes em dados reais de teste, em comparação com treinar apenas com dados reais.
@@ -17,7 +17,7 @@
 | **CUDA** | 12.9 (driver 575) |
 | **Python** | 3.8.16 (Miniconda base) |
 | **venv** | `/var/tmp/cym7/venvs/salt-unet/` (SSD NVMe local) |
-| **Código** | `/u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet/` |
+| **Código** | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
 | **Dataset TGS** | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
 | **Logs** | `/var/tmp/cym7/train_*.log` |
 
@@ -54,7 +54,7 @@ conda run -n unet-salt python -u train.py --scenario A --seed 42 --n_real 800 --
 ## Estrutura da pasta
 
 ```
-experiment-downstream/
+SaltSegmentation-UNet/
 ├── README.md                    ← este arquivo
 ├── setup_and_run.sh             ← script completo de setup + execução
 ├── Salt-Segmentation-UNet/      ← repositório base (clonado, modificado)
@@ -89,7 +89,7 @@ ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b02n07
 
 # Ativar o ambiente Python e ir para o diretório do projeto
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet
+cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 ```
 
 > **Dica:** Usar sempre o terminal SSH persistente para evitar reconexões a cada comando.
@@ -110,7 +110,7 @@ O venv `salt-unet` está instalado no SSD local do servidor com:
 
 Para recriar do zero (se necessário):
 ```bash
-bash /u/cym7/projetos/Experiment-downstream/setup_and_run.sh
+bash /u/cym7/projetos/SaltSegmentation-UNet/setup_and_run.sh
 ```
 
 ### 3 — Dataset TGS (já transferido)
@@ -135,7 +135,7 @@ TGS_PATH = '/var/tmp/cym7/datasets/tgs-salt/train'
 ```bash
 ssh -o ServerAliveInterval=60 atn2b02n07
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet
+cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 ```
 
 ### Passo 1 — Treinar Cenário A (real only) — seeds 42, 123, 456
@@ -143,7 +143,7 @@ cd /u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet
 ```bash
 # Rodar em background com nohup (seguro contra queda de conexão)
 # Os logs ficam na pasta results/ do próprio run
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 nohup python -u train.py --scenario A --seed 42  --epochs 100 > $PROJ/results/scenario_A_seed42/train.log  2>&1 &
 nohup python -u train.py --scenario A --seed 123 --epochs 100 > $PROJ/results/scenario_A_seed123/train.log 2>&1 &
@@ -161,7 +161,7 @@ nohup python -u train.py --scenario A --seed 456 --epochs 100 > $PROJ/results/sc
 python generate_synthetic.py --n 400 --out dataset/synthetic --tgs_dir /var/tmp/cym7/datasets/tgs-salt/train
 
 # Treinar Cenário B
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 nohup python -u train.py --scenario B --seed 42  --epochs 100 > $PROJ/results/scenario_B_seed42/train.log  2>&1 &
 nohup python -u train.py --scenario B --seed 123 --epochs 100 > $PROJ/results/scenario_B_seed123/train.log 2>&1 &
@@ -179,7 +179,7 @@ Saída: `../results/summary.csv` com IoU e Dice para cada seed/cenário.
 ### Passo 4 — Monitorar treinamentos em andamento
 
 ```bash
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 # Acompanhar log em tempo real de um run específico
 tail -f $PROJ/results/scenario_A_seed42/train.log
@@ -199,7 +199,7 @@ nvidia-smi
 ```bash
 # Exploração de escala de dados: N=200, 400, 800, 1600, 2000, 3200
 # Os logs ficam em results/scenario_A_seed42_nreal<N>/train.log (criado automaticamente pelo train.py)
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 nohup python -u train.py --scenario A --seed 42 --n_real 200  --epochs 100 > $PROJ/results/scenario_A_seed42_nreal200/train.log  2>&1 &
 nohup python -u train.py --scenario A --seed 42 --n_real 400  --epochs 100 > $PROJ/results/scenario_A_seed42_nreal400/train.log  2>&1 &
@@ -221,7 +221,7 @@ nohup python -u train.py --scenario A --seed 42 --n_real 2000 --epochs 100 > $PR
 ### Rodar tudo de uma vez (script completo)
 
 ```bash
-bash /u/cym7/projetos/Experiment-downstream/setup_and_run.sh
+bash /u/cym7/projetos/SaltSegmentation-UNet/setup_and_run.sh
 ```
 
 ---

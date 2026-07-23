@@ -1,4 +1,4 @@
-**Manuscrito:** Access-2026-27912  
+﻿**Manuscrito:** Access-2026-27912  
 **Experimento:** R2.1 — Downstream Segmentation  
 
 ## Visão geral do processo de treinamento
@@ -140,9 +140,9 @@ O valor de **0.4067 é adequado como baseline do Cenário A** para o manuscrito.
 
 Vou primeiro ler o código relevante para entender como o Cenário B é construído:
 
-Read [](file:///u%3A/projetos/Experiment-downstream/Salt-Segmentation-UNet/train.py#130-130), lines 130 to 230
+Read [](file:///u%3A/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/train.py#130-130), lines 130 to 230
 
-Read [](file:///u%3A/projetos/Experiment-downstream/Salt-Segmentation-UNet/utils/config.py)
+Read [](file:///u%3A/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/utils/config.py)
 
 Tenho tudo que preciso. Análise completa:
 

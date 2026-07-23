@@ -1,4 +1,4 @@
-# Setup VSCode + SSH Remoto + GitHub Copilot
+﻿# Setup VSCode + SSH Remoto + GitHub Copilot
 
 **Servidor:** `atn2b02n07` (Atena) — 8 × V100-SXM2-32GB  
 **Usuário:** `cym7`  
@@ -95,7 +95,7 @@ ssh atena
 4. Uma nova janela do VSCode abre já dentro do servidor
 5. Abrir a pasta do projeto:
    ```
-   /u/cym7/projetos/Experiment-downstream
+   /u/cym7/projetos/SaltSegmentation-UNet
    ```
 
 > **Dica:** usar `File → Add Folder to Workspace…` para adicionar a pasta do dataset
@@ -115,7 +115,7 @@ Ativar o ambiente Python a cada nova sessão:
 
 ```bash
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet
+cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 ```
 
 Para não repetir isso manualmente, adicionar ao `~/.bashrc` do servidor:
@@ -178,14 +178,14 @@ Extensões necessárias no lado remoto:
 ## 8 — Workspace recomendado (`.code-workspace`)
 
 Salvar o arquivo abaixo como `experiment.code-workspace` na pasta local  
-`U:\projetos\Experiment-downstream\` para abrir tudo com um clique:
+`U:\projetos\SaltSegmentation-UNet\` para abrir tudo com um clique:
 
 ```jsonc
 {
     "folders": [
         {
-            "name": "Experiment-downstream (remoto)",
-            "uri": "vscode-remote://ssh-remote+atena/u/cym7/projetos/Experiment-downstream"
+            "name": "SaltSegmentation-UNet (remoto)",
+            "uri": "vscode-remote://ssh-remote+atena/u/cym7/projetos/SaltSegmentation-UNet"
         }
     ],
     "settings": {

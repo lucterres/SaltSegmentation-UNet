@@ -1,4 +1,4 @@
-"""generate_synthetic.py — Generate synthetic TGS images via the paper's VAE + texture pipeline.
+﻿"""generate_synthetic.py — Generate synthetic TGS images via the paper's VAE + texture pipeline.
 
 This script is meant to be run from the WORKSPACE ROOT (d:/IEEEEAccess), where
 the VAE model checkpoint and texture synthesis code live.
@@ -6,9 +6,9 @@ the VAE model checkpoint and texture synthesis code live.
 Usage
 -----
 cd D:\\IEEEEAccess
-python experiment-downstream/Salt-Segmentation-UNet/generate_synthetic.py \
+python SaltSegmentation-UNet/Salt-Segmentation-UNet/generate_synthetic.py \
     --n 400 \
-    --out experiment-downstream/Salt-Segmentation-UNet/dataset/synthetic \
+    --out SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/synthetic \
     --vae_ckpt <path_to_vae_checkpoint.pth> \
     --tgs_dir  <path_to_tgs_dataset_root>
 
@@ -36,13 +36,13 @@ def parse_args():
     p.add_argument('--n',        type=int, default=400,
                    help='Number of synthetic images to generate')
     p.add_argument('--out',      type=str,
-                   default='experiment-downstream/Salt-Segmentation-UNet/dataset/synthetic',
+                   default='SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/synthetic',
                    help='Output directory (images/ and masks/ created inside)')
     p.add_argument('--vae_ckpt', type=str, default=None,
                    help='Path to the VAE model checkpoint (.pth). '
                         'If None, will search for a default checkpoint.')
     p.add_argument('--tgs_dir',  type=str,
-                   default='experiment-downstream/Salt-Segmentation-UNet/dataset/tgs',
+                   default='SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/tgs',
                    help='Root directory of the TGS dataset (for texture patches)')
     p.add_argument('--latent_dim', type=int, default=100,
                    help='VAE latent dimension (must match training, default=100)')

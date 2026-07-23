@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions — Experimento Downstream R2.1
+﻿# GitHub Copilot Instructions — Experimento Downstream R2.1
 
 ## Contexto do projeto
 
@@ -11,12 +11,12 @@
 
 | Item | Detalhe |
 |------|---------|
-| Servidor | `atn2b02n07` (Atena) — acesso via SSH |
+| Servidor | `atn2b03n01` (Atena) — acesso via SSH |
 | GPUs | 8 × Tesla V100-SXM2-32GB |
-| CUDA | 12.9 (driver 575) |
-| Python | 3.8.16 (Miniconda base) |
-| venv | `/var/tmp/cym7/venvs/salt-unet/` |
-| Código | `/u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet/` |
+| CUDA | 12.6 (PyTorch 2.7.1+cu126) |
+| Python | 3.11.13 |
+| venv | `~/projetos/SaltSegmentation-UNet/venv/` |
+| Código | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
 | Dataset TGS | `/var/tmp/cym7/datasets/tgs-salt/train/` (3998 pares imagem/máscara) |
 
 ---
@@ -39,14 +39,14 @@
 
 ### 1. Conectar ao servidor
 ```bash
-ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b02n07
-source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/projetos/Experiment-downstream/Salt-Segmentation-UNet
+ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n01
+source ~/projetos/SaltSegmentation-UNet/venv/bin/activate
+cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 ```
 
 ### 2. Cenário A — Real only (seeds 42, 123, 456)
 ```bash
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 nohup python -u train.py --scenario A --seed 42  --epochs 100 > $PROJ/results/scenario_A_seed42/train.log  2>&1 &
 nohup python -u train.py --scenario A --seed 123 --epochs 100 > $PROJ/results/scenario_A_seed123/train.log 2>&1 &
@@ -59,7 +59,7 @@ nohup python -u train.py --scenario A --seed 456 --epochs 100 > $PROJ/results/sc
 python generate_synthetic.py --n 400 --out dataset/synthetic \
   --tgs_dir /var/tmp/cym7/datasets/tgs-salt/train
 
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 nohup python -u train.py --scenario B --seed 42  --epochs 100 > $PROJ/results/scenario_B_seed42/train.log  2>&1 &
 nohup python -u train.py --scenario B --seed 123 --epochs 100 > $PROJ/results/scenario_B_seed123/train.log 2>&1 &
@@ -74,7 +74,7 @@ python -u evaluate.py --results_dir ../results
 
 ### 5. Monitorar treinamentos
 ```bash
-PROJ=/u/cym7/projetos/Experiment-downstream
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 
 tail -f $PROJ/results/scenario_A_seed42/train.log   # log em tempo real
 tail -3 $PROJ/results/*/train.log                   # últimas linhas de todos
