@@ -11,12 +11,13 @@
 
 ## 1. Objetivo
 
-Avaliar se o treinamento com **dados reais + sintéticos** melhora a segmentação downstream de salt domes em relação ao treinamento com **dados reais בלבד** no dataset TGS.
+Avaliar se o treinamento com **dados reais + sintéticos** melhora a segmentação downstream de salt domes em relação ao treinamento com **dados reais apenas** no dataset TGS.
 
-Foram testados dois cenários:
+Foram testados três cenários:
 
 - **Cenário A** — Real only
 - **Cenário B** — Real + Synthetic (400 imagens sintéticas)
+- **Cenário B'** — Real + Synthetic (1600 imagens sintéticas geométricas)
 
 A métrica principal é **IoU**. A métrica secundária é **Dice**. O critério de early stopping é **val IoU**.
 
@@ -46,26 +47,52 @@ Seeds executadas: **42, 123, 456**
 | 456 | 3198 | 400 | 0.4198 | 0.4585 | 0.4387 | 67 | 671.6 |
 | **Média** |  |  | **0.4127** | **0.4500** |  | **54.3** |  |
 
+### 2.3 Cenário B' — Dataset completo (~3200 reais + 1600 sintéticos geométricos)
+
+Seeds executadas: **42, 123, 456**  
+Fonte sintética: `dataset/pairs1600.tar` → `dataset/geometric1600/pairs1600/` → symlink `dataset/synthetic`
+
+| Seed | N real | N synth | Test IoU | Test Dice | Best val IoU | Épocas | Tempo (s) |
+|:----:|:------:|:-------:|:--------:|:---------:|:------------:|:------:|:---------:|
+| 42  | 3198 | 1600 | 0.4086 | 0.4441 | 0.4358 | 53 | 766 |
+| 123 | 3198 | 1600 | 0.3989 | 0.4345 | 0.4120 | 31 | 521 |
+| 456 | 3198 | 1600 | 0.4135 | 0.4485 | 0.4339 | 57 | 787 |
+| **Média** |  |  | **0.4070** | **0.4424** |  | **47.0** |  |
+
 ---
 
 ## 3. Comparação principal — Cenário A vs Cenário B
 
-| Cenário | Test IoU médio | Test Dice médio |
-|---------|----------------|-----------------|
-| **A — Real only** | **0.4247** | **0.4598** |
-| **B — Real + Synthetic** | **0.4127** | **0.4500** |
+| Cenário | Configuração | Test IoU médio | Test Dice médio |
+|---------|--------------|----------------|-----------------|
+| **A — Real only** | 3198 reais | **0.4247** | **0.4598** |
+| **B — Real + 400 sintéticos** | 3198 reais + 400 sintéticos | 0.4127 | 0.4500 |
+| **B — Real + 1600 sintéticos geométricos** | 3198 reais + 1600 sintéticos | 0.4070 | 0.4424 |
 
 ### Diferença média
 
-- **IoU:** $0.4127 - 0.4247 = -0.0120$
-- **Dice:** $0.4500 - 0.4598 = -0.0098$
+- **B (400 synth) vs A**
+  - IoU: $0.4127 - 0.4247 = -0.0120$
+  - Dice: $0.4500 - 0.4598 = -0.0098$
+
+- **B (1600 geometric) vs A**
+  - IoU: $0.4070 - 0.4247 = -0.0177$
+  - Dice: $0.4424 - 0.4598 = -0.0174$
+
+- **B (1600 geometric) vs B (400 synth)**
+  - IoU: $0.4070 - 0.4127 = -0.0057$
+  - Dice: $0.4424 - 0.4500 = -0.0076$
 
 ### Interpretação
 
-**O Cenário B não superou o Cenário A.**  
-Com o pool sintético atual (`synthetic400`), a inclusão de 400 imagens sintéticas resultou em pior desempenho médio tanto em **IoU** quanto em **Dice**.
+**Nenhuma variante do Cenário B superou o Cenário A.**  
+Além disso, aumentar o número de amostras sintéticas de **400 para 1600** piorou ainda mais o desempenho médio.
 
-Portanto, **a hipótese do revisor (B > A) não se confirmou neste experimento**.
+Portanto:
+
+1. **A hipótese do revisor (B > A) não se confirmou**.
+2. **Mais dados sintéticos geométricos agravaram a queda de desempenho**.
+3. O principal fator de ganho observado no experimento foi o aumento de **dados reais**, e não a adição de dados sintéticos.
 
 ---
 
