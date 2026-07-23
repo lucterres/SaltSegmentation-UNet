@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Train — A 800 amostras 10 épocas (local 8700G)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Salt-Segmentation-UNet/train.py",
+            "args": ["--scenario", "A", "--seed", "42", "--n_real", "800", "--epochs", "10"],
+            "cwd": "${workspaceFolder}/Salt-Segmentation-UNet",
+            "env": {
+                "TGS_PATH": "D:\\dataset\\tgs-salt\\train"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "C:\\Users\\lucia\\miniconda3\\envs\\unet-salt\\python.exe"
+        },
+        {
+            "name": "Train — A full 3200 amostras 100 épocas (local 8700G)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Salt-Segmentation-UNet/train.py",
+            "args": ["--scenario", "A", "--seed", "42", "--epochs", "100"],
+            "cwd": "${workspaceFolder}/Salt-Segmentation-UNet",
+            "env": {
+                "TGS_PATH": "D:\\dataset\\tgs-salt\\train"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "C:\\Users\\lucia\\miniconda3\\envs\\unet-salt\\python.exe"
+        },
+        {
+            "name": "Train — B real+synth 800 amostras 10 épocas (local 8700G)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Salt-Segmentation-UNet/train.py",
+            "args": ["--scenario", "B", "--seed", "42", "--n_real", "800", "--epochs", "10"],
+            "cwd": "${workspaceFolder}/Salt-Segmentation-UNet",
+            "env": {
+                "TGS_PATH": "D:\\dataset\\tgs-salt\\train"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "C:\\Users\\lucia\\miniconda3\\envs\\unet-salt\\python.exe"
+        }
+    ]
+}
