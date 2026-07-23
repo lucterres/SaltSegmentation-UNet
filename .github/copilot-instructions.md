@@ -21,7 +21,8 @@
 | venv (home backup) | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente entre nós** |
 | Código | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
 | Resultados | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
-| Dataset TGS | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
+| Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
+| Dataset TGS (home backup) | `~/datasets/tgs-salt/tgs-salt.tar` ← **arquivo tar persistente** |
 
 > **Atenção:** `/var/tmp/` é local a cada nó e não persiste.  
 > O venv de referência fica em `/u/cym7/venvs_backup/salt-unet/` (NFS home, persistente).

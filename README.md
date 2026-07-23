@@ -22,7 +22,8 @@
 | **venv (home backup)** | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente** |
 | **Código** | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
 | **Resultados** | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
-| **Dataset TGS** | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
+| **Dataset TGS (SSD local)** | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD NVMe, 3998 pares) |
+| **Dataset TGS (home backup)** | `~/datasets/tgs-salt/tgs-salt.tar` ← **arquivo tar persistente** |
 
 > **Importante:** O `/var/tmp/` é **local a cada nó** e não persiste entre sessões.  
 > O venv de referência fica salvo em `/u/cym7/venvs_backup/salt-unet/` (NFS home, persistente).
@@ -72,11 +73,9 @@ bash /u/cym7/projetos/SaltSegmentation-UNet/setup_and_run.sh
 # Verificar se já existe:
 ls /var/tmp/cym7/datasets/tgs-salt/train/images/ | wc -l  # deve ser 3998
 
-# Se não existir, copiar da home ou de outro nó:
+# Se não existir, extrair do tar persistente na home:
 mkdir -p /var/tmp/cym7/datasets
-cp -r /u/cym7/datasets/tgs-salt /var/tmp/cym7/datasets/
-# ou via rsync de outro nó:
-# rsync -az atn2b02n07:/var/tmp/cym7/datasets/tgs-salt /var/tmp/cym7/datasets/
+tar -xf ~/datasets/tgs-salt/tgs-salt.tar -C /var/tmp/cym7/datasets/
 ```
 
 ---

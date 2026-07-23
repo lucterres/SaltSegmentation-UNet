@@ -15,9 +15,10 @@
 set -e
 
 PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
-VENV="$PROJ/venv"
-TAR_SRC="$HOME/datasets/tgs-salt/tgs-salt.tar"
+VENV="/var/tmp/cym7/venvs/salt-unet"
+VENV_BACKUP="/u/cym7/venvs_backup/salt-unet"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
+TGS_BACKUP="$HOME/datasets/tgs-salt/tgs-salt.tar"
 REQUIREMENTS="$PROJ/Salt-Segmentation-UNet/requirements.txt"
 
 echo "============================================"
@@ -26,7 +27,7 @@ echo " Data       : $(date)"
 echo "============================================"
 
 # ---------------------------------------------------------------------------
-# 1. Dataset — extrai para SSD local se ainda não existir
+# 1. Dataset — copia do backup na home para SSD local se ainda não existir
 # ---------------------------------------------------------------------------
 echo ""
 echo "[1/2] Dataset local..."
@@ -35,27 +36,27 @@ if [ -d "$LOCAL_TGS/train/images" ]; then
     N=$(ls "$LOCAL_TGS/train/images" | wc -l)
     echo "  OK  Dataset já presente: $N imagens"
 else
-    echo "  Extraindo $TAR_SRC → $(dirname $LOCAL_TGS) ..."
-    # O tar contém tgs-salt/ internamente — extrair para o diretório pai
+    echo "  Extraindo $TGS_BACKUP → $(dirname $LOCAL_TGS) ..."
     mkdir -p "$(dirname "$LOCAL_TGS")"
-    tar -xf "$TAR_SRC" -C "$(dirname "$LOCAL_TGS")"
+    tar -xf "$TGS_BACKUP" -C "$(dirname "$LOCAL_TGS")"
     N=$(ls "$LOCAL_TGS/train/images" 2>/dev/null | wc -l || echo "?")
     echo "  OK  Extração concluída: $N imagens"
 fi
 
 # ---------------------------------------------------------------------------
-# 2. Venv — cria se não existir, instala dependências
+# 2. Venv — restaura do backup na home se não existir no SSD local
 # ---------------------------------------------------------------------------
 echo ""
 echo "[2/2] Venv..."
 
 if [ ! -f "$VENV/bin/python" ]; then
-    echo "  Criando venv em $VENV ..."
-    python3 -m venv "$VENV"
-    echo "  Instalando dependências de $REQUIREMENTS ..."
-    "$VENV/bin/pip" install --upgrade pip -q
-    "$VENV/bin/pip" install -r "$REQUIREMENTS" -q
-    echo "  OK  Venv criado e dependências instaladas."
+    echo "  Restaurando venv de $VENV_BACKUP → $VENV ..."
+    mkdir -p "$(dirname "$VENV")"
+    cp -r "$VENV_BACKUP" "$(dirname "$VENV")/"
+    # Corrigir pyvenv.cfg para o Python do nó atual
+    PYTHON_BIN=$(which python3)
+    sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" "$VENV/pyvenv.cfg"
+    echo "  OK  Venv restaurado e reconfigurado."
 else
     PY_VER=$("$VENV/bin/python" --version 2>&1)
     TORCH_VER=$("$VENV/bin/python" -c "import torch; print(torch.__version__)" 2>/dev/null || echo "torch não instalado")
