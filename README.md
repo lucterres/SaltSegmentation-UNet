@@ -12,14 +12,72 @@
 
 | Item | Detalhe |
 |------|---------|
-| **Servidor** | `atn2b02n07` (Atena) |
+| **Cluster** | Atena (Petrobras) — nós GPU alocados via SLURM |
+| **Nó de referência** | `atn2b02n07` (venv original) |
+| **Nó atual** | qualquer `atn2bXXnYY` alocado no dia |
 | **GPUs** | 8 × Tesla V100-SXM2-32GB |
-| **CUDA** | 12.9 (driver 575) |
+| **CUDA** | 12.4–12.9 (driver 575) |
 | **Python** | 3.8.16 (Miniconda base) |
-| **venv** | `/var/tmp/cym7/venvs/salt-unet/` (SSD NVMe local) |
+| **venv (SSD local)** | `/var/tmp/cym7/venvs/salt-unet/` |
+| **venv (home backup)** | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente** |
 | **Código** | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
+| **Resultados** | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
 | **Dataset TGS** | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
-| **Logs** | `/var/tmp/cym7/train_*.log` |
+
+> **Importante:** O `/var/tmp/` é **local a cada nó** e não persiste entre sessões.  
+> O venv de referência fica salvo em `/u/cym7/venvs_backup/salt-unet/` (NFS home, persistente).
+
+---
+
+## Migração do venv para um novo nó GPU
+
+Execute este procedimento **uma vez por nó alocado**, antes de treinar:
+
+### Opção A — Copiar de outro nó ativo (mais rápido, se o nó estiver disponível)
+
+```bash
+# De dentro do novo nó alocado (ou do login node):
+# Substitua atn2b02n07 pelo nó que tem o venv no /var/tmp
+ssh atn2bXXnYY "tar czf - /var/tmp/cym7/venvs/salt-unet" \
+  | tar xzf - -C /u/cym7/venvs_backup/ --strip-components=4
+echo "Backup salvo em /u/cym7/venvs_backup/salt-unet"
+```
+
+### Opção B — Restaurar do backup na home (sempre disponível)
+
+```bash
+# No novo nó alocado:
+mkdir -p /var/tmp/cym7/venvs /var/tmp/cym7/datasets
+cp -r /u/cym7/venvs_backup/salt-unet /var/tmp/cym7/venvs/
+
+# Corrigir o pyvenv.cfg para apontar para o Python do nó atual
+PYTHON_BIN=$(which python3)
+sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" \
+  /var/tmp/cym7/venvs/salt-unet/pyvenv.cfg
+
+# Verificar CUDA
+source /var/tmp/cym7/venvs/salt-unet/bin/activate
+python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_available(), '| GPUs:', torch.cuda.device_count())"
+```
+
+### Opção C — Recriar o venv do zero (se backup corrompido)
+
+```bash
+bash /u/cym7/projetos/SaltSegmentation-UNet/setup_and_run.sh
+```
+
+### Transferir dataset TGS para o SSD local (se não existir)
+
+```bash
+# Verificar se já existe:
+ls /var/tmp/cym7/datasets/tgs-salt/train/images/ | wc -l  # deve ser 3998
+
+# Se não existir, copiar da home ou de outro nó:
+mkdir -p /var/tmp/cym7/datasets
+cp -r /u/cym7/datasets/tgs-salt /var/tmp/cym7/datasets/
+# ou via rsync de outro nó:
+# rsync -az atn2b02n07:/var/tmp/cym7/datasets/tgs-salt /var/tmp/cym7/datasets/
+```
 
 ---
 
@@ -133,7 +191,11 @@ TGS_PATH = '/var/tmp/cym7/datasets/tgs-salt/train'
 ### Setup inicial (uma vez por sessão)
 
 ```bash
-ssh -o ServerAliveInterval=60 atn2b02n07
+# Conectar ao nó alocado no dia (substituir pelo hostname real)
+ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
+
+# Se for a primeira vez neste nó, restaurar o venv (ver seção "Migração do venv")
+# Caso já tenha feito, apenas ativar:
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
 cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 ```

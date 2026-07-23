@@ -11,13 +11,39 @@
 
 | Item | Detalhe |
 |------|---------|
-| Servidor | `atn2b03n01` (Atena) — acesso via SSH |
+| Cluster | Atena (Petrobras) — nós GPU alocados via SLURM |
+| Nó de referência | `atn2b02n07` (venv original criado aqui) |
+| Nó atual | qualquer `atn2bXXnYY` alocado no dia |
 | GPUs | 8 × Tesla V100-SXM2-32GB |
-| CUDA | 12.6 (PyTorch 2.7.1+cu126) |
-| Python | 3.11.13 |
-| venv | `~/projetos/SaltSegmentation-UNet/venv/` |
+| CUDA | 12.4 (PyTorch 2.4.1+cu124) |
+| Python | 3.8.16 (Miniconda base) |
+| venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
+| venv (home backup) | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente entre nós** |
 | Código | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
-| Dataset TGS | `/var/tmp/cym7/datasets/tgs-salt/train/` (3998 pares imagem/máscara) |
+| Resultados | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
+| Dataset TGS | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
+
+> **Atenção:** `/var/tmp/` é local a cada nó e não persiste.  
+> O venv de referência fica em `/u/cym7/venvs_backup/salt-unet/` (NFS home, persistente).
+
+---
+
+## Migração do venv para novo nó GPU (fazer 1x por nó)
+
+```bash
+# 1. Restaurar venv do backup na home para o SSD local do nó
+mkdir -p /var/tmp/cym7/venvs
+cp -r /u/cym7/venvs_backup/salt-unet /var/tmp/cym7/venvs/
+
+# 2. Corrigir pyvenv.cfg
+PYTHON_BIN=$(which python3)
+sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" \
+  /var/tmp/cym7/venvs/salt-unet/pyvenv.cfg
+
+# 3. Verificar CUDA
+source /var/tmp/cym7/venvs/salt-unet/bin/activate
+python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_available(), '| GPUs:', torch.cuda.device_count())"
+```
 
 ---
 
@@ -37,10 +63,10 @@
 
 ## Workflow de execução
 
-### 1. Conectar ao servidor
+### 1. Conectar ao nó alocado e ativar ambiente
 ```bash
-ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n01
-source ~/projetos/SaltSegmentation-UNet/venv/bin/activate
+ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
+source /var/tmp/cym7/venvs/salt-unet/bin/activate
 cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 ```
 
