@@ -15,3 +15,6 @@ Salt-Segmentation-UNet/dataset/synthetic/
 # Output de treino original do repo base (não nosso)
 Salt-Segmentation-UNet/output/
 venv/*
+
+
+Salt-Segmentation-UNet/dataset/geometric1600/pairs1600
