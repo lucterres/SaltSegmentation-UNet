@@ -59,6 +59,18 @@ Fonte sintética: `dataset/pairs1600.tar` → `dataset/geometric1600/pairs1600/`
 | 456 | 3198 | 1600 | 0.4135 | 0.4485 | 0.4339 | 57 | 787 |
 | **Média** |  |  | **0.4070** | **0.4424** |  | **47.0** |  |
 
+### 2.4 Cenário B — Dataset completo (~3200 reais + 955 sintéticos sísmicos)
+
+Seeds executadas: **42, 123, 456**  
+Fonte sintética: `dataset/pairs1600_seismic.tar` → `dataset/geometric1600_seismic/pairs1600_seismic/` → symlink `dataset/synthetic`
+
+| Seed | N real | N synth | Test IoU | Test Dice | Best val IoU | Épocas | Tempo (s) |
+|:----:|:------:|:-------:|:--------:|:---------:|:------------:|:------:|:---------:|
+| 42  | 3198 | 955 | 0.4202 | 0.4572 | 0.4439 | 49 | 696 |
+| 123 | 3198 | 955 | 0.4230 | 0.4600 | 0.4320 | 52 | 734 |
+| 456 | 3198 | 955 | 0.4179 | 0.4540 | 0.4365 | 53 | 739 |
+| **Média** |  |  | **0.4204** | **0.4571** |  | **51.3** |  |
+
 ---
 
 ## 3. Comparação principal — Cenário A vs Cenário B
@@ -68,6 +80,7 @@ Fonte sintética: `dataset/pairs1600.tar` → `dataset/geometric1600/pairs1600/`
 | **A — Real only** | 3198 reais | **0.4247** | **0.4598** |
 | **B — Real + 400 sintéticos** | 3198 reais + 400 sintéticos | 0.4127 | 0.4500 |
 | **B — Real + 1600 sintéticos geométricos** | 3198 reais + 1600 sintéticos | 0.4070 | 0.4424 |
+| **B — Real + 955 sintéticos sísmicos** | 3198 reais + 955 sintéticos | **0.4204** | **0.4571** |
 
 ### Diferença média
 
@@ -79,20 +92,31 @@ Fonte sintética: `dataset/pairs1600.tar` → `dataset/geometric1600/pairs1600/`
   - IoU: $0.4070 - 0.4247 = -0.0177$
   - Dice: $0.4424 - 0.4598 = -0.0174$
 
-- **B (1600 geometric) vs B (400 synth)**
-  - IoU: $0.4070 - 0.4127 = -0.0057$
-  - Dice: $0.4424 - 0.4500 = -0.0076$
+- **B (955 seismic) vs A**
+  - IoU: $0.4204 - 0.4247 = -0.0043$
+  - Dice: $0.4571 - 0.4598 = -0.0027$
+
+- **B (955 seismic) vs B (400 synth)**
+  - IoU: $0.4204 - 0.4127 = +0.0077$
+  - Dice: $0.4571 - 0.4500 = +0.0071$
+
+- **B (955 seismic) vs B (1600 geometric)**
+  - IoU: $0.4204 - 0.4070 = +0.0134$
+  - Dice: $0.4571 - 0.4424 = +0.0147$
 
 ### Interpretação
 
 **Nenhuma variante do Cenário B superou o Cenário A.**  
-Além disso, aumentar o número de amostras sintéticas de **400 para 1600** piorou ainda mais o desempenho médio.
+No entanto, os **955 sintéticos sísmicos** foram a melhor variante sintética testada e chegaram muito perto do baseline real-only.
 
-Portanto:
+Resumo qualitativo:
 
 1. **A hipótese do revisor (B > A) não se confirmou**.
-2. **Mais dados sintéticos geométricos agravaram a queda de desempenho**.
-3. O principal fator de ganho observado no experimento foi o aumento de **dados reais**, e não a adição de dados sintéticos.
+2. **Sintéticos geométricos degradaram fortemente a generalização**.
+3. **Sintéticos sísmicos foram significativamente melhores que sintéticos geométricos** e também melhores que o pool sintético inicial de 400 amostras.
+4. Mesmo assim, o melhor cenário sintético (**B + 955 sísmicos**) ainda ficou levemente abaixo do cenário **A**.
+
+Isso sugere que a **distribuição dos sintéticos importa**: dados sintéticos mais próximos do domínio sísmico real reduzem a degradação, mas ainda não produzem ganho líquido sobre o baseline com dados reais apenas.
 
 ---
 
@@ -173,9 +197,12 @@ Em outras palavras: os dados sintéticos não causaram colapso do treinamento, m
 Resultado médio final:
 
 - **Cenário A:** IoU = **0.4247**, Dice = **0.4598**
-- **Cenário B:** IoU = **0.4127**, Dice = **0.4500**
+- **Cenário B (+400 sintéticos):** IoU = **0.4127**, Dice = **0.4500**
+- **Cenário B (+1600 geométricos):** IoU = **0.4070**, Dice = **0.4424**
+- **Cenário B (+955 sísmicos):** IoU = **0.4204**, Dice = **0.4571**
 
-Logo, para o pool sintético atual e a configuração utilizada, a hipótese **B > A** foi **refutada**.
+Logo, para todos os pools sintéticos avaliados, a hipótese **B > A** foi **refutada**.  
+A melhor configuração sintética foi a de **955 amostras sísmicas**, mas ela ainda ficou abaixo do baseline por pequena margem.
 
 ### Implicação para a resposta ao revisor
 
@@ -183,22 +210,5 @@ A seção R2.1 deve reportar o experimento de forma transparente, destacando que
 
 - o experimento downstream foi implementado e executado com múltiplas seeds;
 - a adição de imagens sintéticas **não trouxe ganho** de desempenho no teste real;
+- o tipo de sintético influencia fortemente o resultado (**sísmico > geométrico**);
 - o principal fator de melhoria observado foi o aumento da quantidade de **dados reais**.
-
----
-
-## 7. Arquivos de referência
-
-- `results/scenario_A_seed42/result.csv`
-- `results/scenario_A_seed123/result.csv`
-- `results/scenario_A_seed456/result.csv`
-- `results/scenario_B_seed42/result.csv`
-- `results/scenario_B_seed123/result.csv`
-- `results/scenario_B_seed456/result.csv`
-- `results/scenario_A_seed42_nreal800/result.csv`
-- `results/scenario_A_seed123_nreal800/result.csv`
-- `results/scenario_A_seed456_nreal800/result.csv`
-- `results/scenario_A_seed42_nreal1200/result.csv`
-- `results/scenario_A_seed123_nreal1200/result.csv`
-- `results/scenario_A_seed456_nreal1200/result.csv`
-- `results/relatorio_cenarioA_800_1200_3200.md`
