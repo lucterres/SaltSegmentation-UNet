@@ -6,6 +6,9 @@
 
 ## 1. Conectar ao nó GPU alocado
 
+    ssh no nó de login: atena03.petrobras.biz
+    solicitar no com gpu: salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00 
+
 ```bash
 # Abrir terminal SSH persistente (substituir pelo nó alocado no dia)
 ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
@@ -52,11 +55,30 @@ python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_avail
 
 ## 4. Comandos de treinamento
 
-> Sempre definir `PROJ` antes de rodar. Os diretórios de resultado são criados automaticamente.
+> Sempre definir `PROJ` antes de rodar. Os diretórios de resultado são criados automaticamente pelo `train.py`.
 
 ```bash
 PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 ```
+
+### Argumentos do `train.py`
+
+| Argumento | Tipo | Default | Descrição |
+|-----------|------|---------|-----------|
+| `--scenario` | A/B | obrigatório | A = real only; B = real + sintéticos |
+| `--seed` | int | 42 | Semente para reprodutibilidade |
+| `--n_real` | int | None | Limitar amostras reais (low-data regime) |
+| `--n_synth` | int | 400 | Número de sintéticos no Cenário B |
+| `--epochs` | int | 50 | Máximo de épocas (early stop por val IoU) |
+| `--batch` | int | 16 | Batch size |
+| `--lr` | float | 1e-4 | Learning rate |
+| `--train_dir` | path | None | **Novo** — pasta `images/`+`masks/` para treino externo (sobrescreve `TGS_PATH`) |
+| `--test_dir` | path | None | **Novo** — pasta `images/`+`masks/` para test set fixo externo (pula split interno) |
+
+> **Nota:** quando `--train_dir` é fornecido, o `run_tag` recebe o sufixo do nome da pasta (ex: `scenario_A_seed42_train_filtered`).  
+> Quando `--test_dir` é fornecido, o split interno 80/20 é ignorado — o test set externo é usado diretamente.
+
+---
 
 ### Cenário A — Real only (seeds 42, 123, 456 — dataset completo ~3200)
 
@@ -78,21 +100,77 @@ nohup python -u train.py --scenario A --seed 42 --n_real $N --epochs 100 \
   > $PROJ/results/scenario_A_seed42_nreal${N}/train.log 2>&1 & echo "PID: $!"
 ```
 
-### Cenário B — Real + Synthetic (seeds 42, 123, 456)
+### Cenário B — Real + Synthetic (seeds 42, 123, 456 — dataset completo)
 
 ```bash
-# Pré-requisito: symlink para dados sintéticos (já feito em atn2b03n01)
+# Verificar/ajustar symlink para o pool sintético desejado:
+# 400 sintéticos originais:
 ln -sfn /var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400 dataset/synthetic
+# 955 sintéticos sísmicos (melhor resultado):
+ln -sfn /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic dataset/synthetic
+
 ls dataset/synthetic/  # deve mostrar: images  masks
 
 mkdir -p $PROJ/results/scenario_B_seed{42,123,456}
 
-nohup python -u train.py --scenario B --seed 42  --epochs 100 > $PROJ/results/scenario_B_seed42/train.log  2>&1 &
-nohup python -u train.py --scenario B --seed 123 --epochs 100 > $PROJ/results/scenario_B_seed123/train.log 2>&1 &
-nohup python -u train.py --scenario B --seed 456 --epochs 100 > $PROJ/results/scenario_B_seed456/train.log 2>&1 &
+nohup python -u train.py --scenario B --seed 42  --n_synth 955 --epochs 100 > $PROJ/results/scenario_B_seed42/train.log  2>&1 &
+nohup python -u train.py --scenario B --seed 123 --n_synth 955 --epochs 100 > $PROJ/results/scenario_B_seed123/train.log 2>&1 &
+nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 > $PROJ/results/scenario_B_seed456/train.log 2>&1 &
 ```
 
-### Cenário B — Low-data regime (800 reais + 400 sintéticos)
+### Cenário A/B — com dataset externo `subset_split` (protocolo canônico — melhor resultado)
+
+```bash
+# Pré-requisito: extrair subset_split no SSD local
+tar -xf /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/subset_split.tar \
+    -C /var/tmp/cym7/datasets/
+
+SPLIT=/var/tmp/cym7/datasets/subset_split
+
+# Cenário A — 3 seeds
+mkdir -p $PROJ/results/scenario_A_seed{42,123,456}_train_filtered
+nohup python -u train.py --scenario A --seed 42  --epochs 100 \
+  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
+  > $PROJ/results/scenario_A_seed42_train_filtered/train.log  2>&1 &
+nohup python -u train.py --scenario A --seed 123 --epochs 100 \
+  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
+  > $PROJ/results/scenario_A_seed123_train_filtered/train.log 2>&1 &
+nohup python -u train.py --scenario A --seed 456 --epochs 100 \
+  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
+  > $PROJ/results/scenario_A_seed456_train_filtered/train.log 2>&1 &
+
+# Cenário B — 3 seeds (+ 955 sintéticos sísmicos)
+mkdir -p $PROJ/results/scenario_B_seed{42,123,456}_train_filtered
+nohup python -u train.py --scenario B --seed 42  --n_synth 955 --epochs 100 \
+  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
+  > $PROJ/results/scenario_B_seed42_train_filtered/train.log  2>&1 &
+nohup python -u train.py --scenario B --seed 123 --n_synth 955 --epochs 100 \
+  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
+  > $PROJ/results/scenario_B_seed123_train_filtered/train.log 2>&1 &
+nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 \
+  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
+  > $PROJ/results/scenario_B_seed456_train_filtered/train.log 2>&1 &
+```
+
+### Cenário A/B — com `subset_10_90` (train e test filtrados 10–90%)
+
+```bash
+# Pré-requisito: extrair subset_10_90 no SSD local
+tar -xf /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/subset_10_90.tar \
+    -C /var/tmp/cym7/datasets/
+
+mkdir -p $PROJ/results/scenario_{A,B}_seed42_subset1090
+
+nohup env TGS_PATH=/var/tmp/cym7/datasets/subset_10_90 \
+  python -u train.py --scenario A --seed 42 --epochs 100 \
+  > $PROJ/results/scenario_A_seed42_subset1090/train.log 2>&1 &
+
+nohup env TGS_PATH=/var/tmp/cym7/datasets/subset_10_90 \
+  python -u train.py --scenario B --seed 42 --n_synth 955 --epochs 100 \
+  > $PROJ/results/scenario_B_seed42_subset1090/train.log 2>&1 &
+```
+
+### Cenário B — Low-data regime (800 reais + sintéticos)
 
 ```bash
 mkdir -p $PROJ/results/scenario_B_seed{42,123,456}_nreal800

@@ -92,6 +92,13 @@ def parse_args():
     p.add_argument('--epochs',  type=int,   default=config.EPOCHS)
     p.add_argument('--batch',   type=int,   default=config.BATCH_SIZE)
     p.add_argument('--lr',      type=float, default=config.LR)
+    p.add_argument('--train_dir', type=str, default=None,
+                   help='External train directory with images/ and masks/ subfolders. '
+                        'Overrides TGS_PATH for training data.')
+    p.add_argument('--test_dir', type=str, default=None,
+                   help='External test directory with images/ and masks/ subfolders. '
+                        'When provided, skips the internal train/test split and uses '
+                        'this fixed test set instead.')
     return p.parse_args()
 
 
@@ -107,6 +114,9 @@ def main():
     run_tag = f'scenario_{args.scenario}_seed{args.seed}'
     if args.n_real is not None:
         run_tag += f'_nreal{args.n_real}'
+    if args.train_dir is not None:
+        ds_name = os.path.basename(args.train_dir.rstrip('/\\'))
+        run_tag += f'_{ds_name}'
     out_dir = os.path.join('..', 'results', run_tag)
     os.makedirs(out_dir, exist_ok=True)
     print(f'[INFO] Run: {run_tag}  device={config.DEVICE}')
@@ -114,8 +124,13 @@ def main():
     # -----------------------------------------------------------------------
     # 1. Fixed test split (seed=0, shared across all runs)
     # -----------------------------------------------------------------------
-    all_imgs  = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
-    all_masks = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
+
+    # Determine train source
+    train_img_dir  = os.path.join(args.train_dir, 'images') if args.train_dir else config.IMAGE_DATASET_PATH
+    train_mask_dir = os.path.join(args.train_dir, 'masks')  if args.train_dir else config.MASK_DATASET_PATH
+
+    all_imgs  = sorted(list(paths.list_images(train_img_dir)))
+    all_masks = sorted(list(paths.list_images(train_mask_dir)))
 
     # Keep only matched pairs (some datasets have orphan masks without images)
     img_stem  = {os.path.splitext(os.path.basename(p))[0]: p for p in all_imgs}
@@ -125,20 +140,32 @@ def main():
     all_masks = [msk_stem[s] for s in common]
     print(f'[INFO] Valid pairs: {len(all_imgs)} (orphans discarded)')
 
-    strata = [coverage_class(m) for m in all_masks]
-
-    train_imgs, test_imgs, train_masks, test_masks = train_test_split(
-        all_imgs, all_masks,
-        test_size=config.TEST_SPLIT,
-        random_state=0,      # FIXED — never change; ensures same test set for all runs
-        stratify=strata,
-    )
-
-    os.makedirs(os.path.dirname(config.TEST_PATHS), exist_ok=True)
-    if not os.path.exists(config.TEST_PATHS):
-        with open(config.TEST_PATHS, 'w') as f:
-            f.write('\n'.join(test_imgs))
-    print(f'[INFO] Train pool: {len(train_imgs)} | Test: {len(test_imgs)}')
+    if args.test_dir:
+        # External fixed test set — skip internal train/test split
+        test_img_dir  = os.path.join(args.test_dir, 'images')
+        test_mask_dir = os.path.join(args.test_dir, 'masks')
+        test_img_list  = sorted(list(paths.list_images(test_img_dir)))
+        test_mask_list = sorted(list(paths.list_images(test_mask_dir)))
+        ti_stem = {os.path.splitext(os.path.basename(p))[0]: p for p in test_img_list}
+        tm_stem = {os.path.splitext(os.path.basename(p))[0]: p for p in test_mask_list}
+        tc = sorted(ti_stem.keys() & tm_stem.keys())
+        test_imgs  = [ti_stem[s] for s in tc]
+        test_masks = [tm_stem[s] for s in tc]
+        train_imgs, train_masks = all_imgs, all_masks
+        print(f'[INFO] External test set: {len(test_imgs)} | Train pool: {len(train_imgs)}')
+    else:
+        strata = [coverage_class(m) for m in all_masks]
+        train_imgs, test_imgs, train_masks, test_masks = train_test_split(
+            all_imgs, all_masks,
+            test_size=config.TEST_SPLIT,
+            random_state=0,      # FIXED — never change; ensures same test set for all runs
+            stratify=strata,
+        )
+        os.makedirs(os.path.dirname(config.TEST_PATHS), exist_ok=True)
+        if not os.path.exists(config.TEST_PATHS):
+            with open(config.TEST_PATHS, 'w') as f:
+                f.write('\n'.join(test_imgs))
+        print(f'[INFO] Train pool: {len(train_imgs)} | Test: {len(test_imgs)}')
 
     # -----------------------------------------------------------------------
     # 2. Optional low-data regime

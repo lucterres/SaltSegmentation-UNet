@@ -55,10 +55,29 @@ python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_avail
 | `Salt-Segmentation-UNet/utils/config.py` | Configurações centrais (`TGS_PATH`, canais do encoder) |
 | `Salt-Segmentation-UNet/utils/model.py` | U-Net com `padding=1` nos `Conv2d` |
 | `Salt-Segmentation-UNet/utils/dataset.py` | DataLoader TGS; interpolação `NEAREST` para máscaras |
-| `Salt-Segmentation-UNet/train.py` | Loop de treino com IoU/Dice, early stopping, `--scenario`, `--seed`, `--n_real`, `--n_synth`, `--epochs`, `--batch`, `--lr` |
+| `Salt-Segmentation-UNet/train.py` | Loop de treino com IoU/Dice, early stopping, `--scenario`, `--seed`, `--n_real`, `--n_synth`, `--epochs`, `--batch`, `--lr`, `--train_dir`, `--test_dir` |
 | `Salt-Segmentation-UNet/evaluate.py` | Avaliação no test set fixo → gera `results/summary.csv` |
 | `Salt-Segmentation-UNet/generate_synthetic.py` | Gera pool sintético via VAE + textura |
 | `setup_and_run.sh` | Script completo de setup + execução end-to-end |
+| `QUICKSTART.md` | Guia rápido com todos os comandos de treinamento |
+| `docs/relatorio-final-r21-downstream.md` | Relatório completo dos experimentos |
+
+### Novos argumentos do `train.py`
+
+- `--train_dir <path>` — pasta com `images/` e `masks/` para treino externo (sobrescreve `TGS_PATH`)
+- `--test_dir <path>` — pasta com `images/` e `masks/` para test set fixo externo (pula split interno)
+
+### Datasets disponíveis no servidor
+
+| Dataset | Path (servidor) | Amostras | Descrição |
+|---------|----------------|----------|-----------|
+| TGS completo | `/var/tmp/cym7/datasets/tgs-salt/train/` | 3998 | Dataset original |
+| subset_split/train_filtered | `/var/tmp/cym7/datasets/subset_split/train_filtered/` | 1293 | Filtrado 10–90% |
+| subset_split/test | `/var/tmp/cym7/datasets/subset_split/test/` | 800 | Test canônico (dist. real) |
+| subset_10_90 | `/var/tmp/cym7/datasets/subset_10_90/` | 1616 | Filtrado 10–90% (sem split fixo) |
+| synthetic400 | `/var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400/` | 400 | Sintéticos originais |
+| pairs1600_seismic | `dataset/geometric1600_seismic/pairs1600_seismic/` | 955 | Sintéticos sísmicos (melhor) |
+| pairs1600 (geométrico) | `dataset/geometric1600/pairs1600/` | 1600 | Sintéticos geométricos |
 
 ---
 
