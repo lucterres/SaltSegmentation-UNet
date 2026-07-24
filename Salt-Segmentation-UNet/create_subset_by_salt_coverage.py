@@ -26,7 +26,6 @@ python create_subset_by_salt_coverage.py --csv_only
 """
 
 import argparse
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -118,7 +117,7 @@ def build_stats(img_dir: Path, mask_dir: Path) -> pd.DataFrame:
             continue
         try:
             coverage = salt_coverage_pct(str(mp))
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"  [AVISO] Erro ao ler {mp.name}: {e} — pulando.")
             continue
         records.append({
