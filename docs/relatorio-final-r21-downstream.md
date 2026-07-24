@@ -212,3 +212,39 @@ A seção R2.1 deve reportar o experimento de forma transparente, destacando que
 - a adição de imagens sintéticas **não trouxe ganho** de desempenho no teste real;
 - o tipo de sintético influencia fortemente o resultado (**sísmico > geométrico**);
 - o principal fator de melhoria observado foi o aumento da quantidade de **dados reais**.
+
+---
+
+## 7. Experimento adicional — Dataset `subset_10_90`
+
+### 7.1 Descrição do dataset
+
+O `subset_10_90` é um subconjunto do TGS que contém apenas amostras com cobertura de sal entre **10% e 90%** da imagem, excluindo os casos triviais (sem sal ou com sal completo). Tem **1616 pares** imagem/máscara.
+
+### 7.2 Resultados — Cenário A com `subset_10_90` (3 seeds, 100 épocas)
+
+| Seed | Test IoU | Test Dice | Best val IoU | Épocas | Tempo (s) |
+|:----:|:--------:|:---------:|:------------:|:------:|:---------:|
+| 42  | 0.8340 | 0.8943 | 0.7760 | 44 | 183 |
+| 123 | 0.8490 | 0.9037 | 0.7998 | 37 | 162 |
+| 456 | 0.8493 | 0.9055 | 0.8323 | 53 | 202 |
+| **Média** |  |  |  |  |  |
+|  | **0.8441** | **0.9012** |  | **44.7** | **182** |
+
+### 7.3 Comparação com dataset TGS completo
+
+| Dataset | N amostras | Test IoU médio | Test Dice médio |
+|---------|:----------:|:--------------:|:---------------:|
+| TGS completo | ~3198 | 0.4247 | 0.4598 |
+| **subset_10_90** | **1616** | **0.8441** | **0.9012** |
+
+### 7.4 Interpretação
+
+O `subset_10_90` produziu métricas **~2× superiores** ao TGS completo com **menos de metade das amostras**:
+
+- **IoU:** $0.8441 - 0.4247 = +0.4194$ ($+99\%$ relativo)
+- **Dice:** $0.9012 - 0.4598 = +0.4414$ ($+96\%$ relativo)
+
+Isso indica que **a composição do dataset tem impacto muito maior que a quantidade de amostras ou a adição de dados sintéticos**. O `subset_10_90` elimina os casos triviais (imagens sem sal e imagens totalmente cobertas de sal), que são mais fáceis de classificar mas degradam a métrica IoU nos casos mais difíceis e relevantes.
+
+**Implicação para o paper:** os dados sintéticos gerados pelo modelo generativo devem ser avaliados não apenas em quantidade, mas na distribuição de cobertura de sal — amostras sintéticas com distribuições de cobertura semelhantes ao `subset_10_90` (10–90%) podem ter maior utilidade que amostras extremas.

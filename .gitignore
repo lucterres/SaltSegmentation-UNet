@@ -21,3 +21,4 @@ Salt-Segmentation-UNet/dataset/geometric1600/pairs1600
 Salt-Segmentation-UNet/dataset/geometric1600_seismic
 
 Salt-Segmentation-UNet/dataset/synthetic
+Salt-Segmentation-UNet/dataset/subset_10_90/subset_10_90
