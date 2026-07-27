@@ -415,3 +415,32 @@ A resposta ao revisor deve destacar:
 - A hipótese B > A **se confirmou com o protocolo canônico** (`train_filtered` + test real), com ganho de **+0.011 IoU**
 - O resultado depende criticamente da composição do treino: filtrar casos triviais potencializa o efeito dos sintéticos
 - Com o dataset completo (protocolo original), B < A — resultado que também deve ser reportado de forma transparente
+
+---
+
+## 12. Comparação por dataset de treino — Cenário A, seed 42, test canônico (800 amostras reais)
+
+Esta seção compara o efeito da **filtragem do dataset de treino** mantendo o **mesmo test set canônico** de 800 amostras com distribuição real completa (`subset_split/test`).
+
+| Dataset treino | Filtro | Amostras treino | Test IoU | Test Dice | Best val IoU | Épocas |
+|:--------------:|:------:|:---------------:|:--------:|:---------:|:------------:|:------:|
+| TGS completo | nenhum | 3198 | 0.4312 | 0.4657 | 0.4426 | 57 |
+| `train_filtered` | 10–90% | 1293 | 0.4201 | 0.4553 | 0.8517 | 56 |
+| **`subset_1_99`** | **1–99%** | **2209** | **0.4791** | **0.5058** | **0.7826** | **55** |
+
+### Interpretação
+
+- **`subset_1_99`** (1–99% de sal, 2209 amostras) **superou o TGS completo** com 3198 amostras em IoU (+0.048) e Dice (+0.040), com menos amostras.
+- O `train_filtered` (10–90%) ficou abaixo do TGS completo — amostras demais excluídas (apenas 1293).
+- **Remover os extremos (0% e 100% de sal) do treino melhora a generalização** no test real, mesmo com menos dados.
+- A `best_val_iou` muito alta no `train_filtered` (0.85) e `subset_1_99` (0.78) reflete que a validação é feita no mesmo domínio filtrado — não comparável diretamente com a val do TGS completo (0.44).
+
+### Com test set filtrado (subset_10_90 — apenas casos 10–90%)
+
+| Dataset treino | Test IoU | Test Dice | Tipo de test |
+|:--------------:|:--------:|:---------:|:------------:|
+| TGS completo | 0.4312 | 0.4657 | distribuição real |
+| `subset_1_99` | **0.4791** | **0.5058** | distribuição real |
+| `subset_10_90` | **0.8340** | **0.8943** | filtrado (10–90%) |
+
+> **Nota:** o IoU de 0.83 do `subset_10_90` é medido num test set **sem casos triviais**, o que explica o valor muito superior — métricas incomparáveis entre si. O test canônico (800 amostras reais) é o benchmark correto para comparação com o paper.
