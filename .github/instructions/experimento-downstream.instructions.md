@@ -1,10 +1,20 @@
 ---
-applyTo: "**"
+applyTo: "Salt-Segmentation-UNet/**/*.py"
 ---
 
-# Instruções — Experimento Downstream R2.1
+# Índice — Experimento Downstream R2.1
 
-**Manuscrito:** Access-2026-27912 | **Última atualização:** 2026-07-27
+> Este arquivo foi refatorado. O conteúdo foi distribuído nas camadas corretas:
+
+| Camada | Arquivo | Escopo |
+|--------|---------|--------|
+| Infra & ambiente | `infra.instructions.md` | `**/*.sh` |
+| Experimentos & datasets | `experimento.instructions.md` | `Salt-Segmentation-UNet/**/*.py` |
+| Relatório | `relatorio.instructions.md` | `docs/**/*.md` |
+| Rodar experimento | `../prompts/run-experiment.prompt.md` | — |
+| Atualizar relatório | `../prompts/update-report.prompt.md` | — |
+| Análise de métricas | `../agents/researcher.agent.md` | — |
+| Gerar subset | `../skills/generate-subset.md` | — |
 
 ---
 

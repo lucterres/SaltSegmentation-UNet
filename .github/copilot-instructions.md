@@ -2,49 +2,17 @@
 
 ## Contexto do projeto
 
-**Manuscrito:** Access-2026-27912
+**Manuscrito:** Access-2026-27912  
 **Objetivo:** Demonstrar que treinar com dados reais + sintéticos melhora a segmentação de salt domes em dados sísmicos reais de teste (Cenário B > Cenário A).
 
 ---
 
-## Infraestrutura de execução
+## Cenários definidos
 
-| Item | Detalhe |
-|------|---------|
-| Cluster | Atena (Petrobras) — nós GPU alocados via SLURM |
-| Nó de referência | `atn2b02n07` (venv original criado aqui) |
-| Nó atual | qualquer `atn2bXXnYY` alocado no dia |
-| GPUs | 8 × Tesla V100-SXM2-32GB |
-| CUDA | 12.4 (PyTorch 2.4.1+cu124) |
-| Python | 3.8.16 (Miniconda base) |
-| venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
-| venv (home backup) | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente entre nós** |
-| Código | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
-| Resultados | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
-| Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD local, 3998 pares) |
-| Dataset TGS (home backup) | `~/datasets/tgs-salt/tgs-salt.tar` ← **arquivo tar persistente** |
-
-> **Atenção:** `/var/tmp/` é local a cada nó e não persiste.  
-> O venv de referência fica em `/u/cym7/venvs_backup/salt-unet/` (NFS home, persistente).
-
----
-
-## Migração do venv para novo nó GPU (fazer 1x por nó)
-
-```bash
-# 1. Restaurar venv do backup na home para o SSD local do nó
-mkdir -p /var/tmp/cym7/venvs
-cp -r /u/cym7/venvs_backup/salt-unet /var/tmp/cym7/venvs/
-
-# 2. Corrigir pyvenv.cfg
-PYTHON_BIN=$(which python3)
-sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" \
-  /var/tmp/cym7/venvs/salt-unet/pyvenv.cfg
-
-# 3. Verificar CUDA
-source /var/tmp/cym7/venvs/salt-unet/bin/activate
-python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_available(), '| GPUs:', torch.cuda.device_count())"
-```
+| Cenário | Dados de treino | Objetivo |
+|---------|----------------|----------|
+| A | Real only | Baseline |
+| B | Real + Sintético | Hipótese do paper |
 
 ---
 
@@ -55,87 +23,29 @@ python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_avail
 | `Salt-Segmentation-UNet/utils/config.py` | Configurações centrais (`TGS_PATH`, canais do encoder) |
 | `Salt-Segmentation-UNet/utils/model.py` | U-Net com `padding=1` nos `Conv2d` |
 | `Salt-Segmentation-UNet/utils/dataset.py` | DataLoader TGS; interpolação `NEAREST` para máscaras |
-| `Salt-Segmentation-UNet/train.py` | Loop de treino com IoU/Dice, early stopping, `--scenario`, `--seed`, `--n_real`, `--n_synth`, `--epochs`, `--batch`, `--lr`, `--train_dir`, `--test_dir` |
+| `Salt-Segmentation-UNet/train.py` | Loop de treino: `--scenario`, `--seed`, `--n_real`, `--n_synth`, `--epochs`, `--batch`, `--lr`, `--train_dir`, `--test_dir` |
 | `Salt-Segmentation-UNet/evaluate.py` | Avaliação no test set fixo → gera `results/summary.csv` |
 | `Salt-Segmentation-UNet/generate_synthetic.py` | Gera pool sintético via VAE + textura |
-| `setup_and_run.sh` | Script completo de setup + execução end-to-end |
-| `QUICKSTART.md` | Guia rápido com todos os comandos de treinamento |
 | `docs/relatorio-final-r21-downstream.md` | Relatório completo dos experimentos |
-
-### Novos argumentos do `train.py`
-
-- `--train_dir <path>` — pasta com `images/` e `masks/` para treino externo (sobrescreve `TGS_PATH`)
-- `--test_dir <path>` — pasta com `images/` e `masks/` para test set fixo externo (pula split interno)
-
-### Datasets disponíveis no servidor
-
-| Dataset | Path (servidor) | Amostras | Descrição |
-|---------|----------------|----------|-----------|
-| TGS completo | `/var/tmp/cym7/datasets/tgs-salt/train/` | 3998 | Dataset original |
-| subset_split/train_filtered | `/var/tmp/cym7/datasets/subset_split/train_filtered/` | 1293 | Filtrado 10–90% |
-| subset_split/test | `/var/tmp/cym7/datasets/subset_split/test/` | 800 | Test canônico (dist. real) |
-| subset_10_90 | `/var/tmp/cym7/datasets/subset_10_90/` | 1616 | Filtrado 10–90% (sem split fixo) |
-| synthetic400 | `/var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400/` | 400 | Sintéticos originais |
-| pairs1600_seismic | `dataset/geometric1600_seismic/pairs1600_seismic/` | 955 | Sintéticos sísmicos (melhor) |
-| pairs1600 (geométrico) | `dataset/geometric1600/pairs1600/` | 1600 | Sintéticos geométricos |
 
 ---
 
-## Workflow de execução
+## Convenções de código
 
-### 1. Conectar ao nó alocado e ativar ambiente
-```bash
-ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
-source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
-```
-
-### 2. Cenário A — Real only (seeds 42, 123, 456)
-```bash
-PROJ=/u/cym7/projetos/SaltSegmentation-UNet
-
-nohup python -u train.py --scenario A --seed 42  --epochs 100 > $PROJ/results/scenario_A_seed42/train.log  2>&1 &
-nohup python -u train.py --scenario A --seed 123 --epochs 100 > $PROJ/results/scenario_A_seed123/train.log 2>&1 &
-nohup python -u train.py --scenario A --seed 456 --epochs 100 > $PROJ/results/scenario_A_seed456/train.log 2>&1 &
-```
-
-### 3. Cenário B — Real + Synthetic (seeds 42, 123, 456)
-```bash
-# Gerar pool sintético (400 imagens)
-python generate_synthetic.py --n 400 --out dataset/synthetic \
-  --tgs_dir /var/tmp/cym7/datasets/tgs-salt/train
-
-PROJ=/u/cym7/projetos/SaltSegmentation-UNet
-
-nohup python -u train.py --scenario B --seed 42  --epochs 100 > $PROJ/results/scenario_B_seed42/train.log  2>&1 &
-nohup python -u train.py --scenario B --seed 123 --epochs 100 > $PROJ/results/scenario_B_seed123/train.log 2>&1 &
-nohup python -u train.py --scenario B --seed 456 --epochs 100 > $PROJ/results/scenario_B_seed456/train.log 2>&1 &
-```
-
-### 4. Avaliação final
-```bash
-python -u evaluate.py --results_dir ../results
-# Saída: ../results/summary.csv
-```
-
-### 5. Monitorar treinamentos
-```bash
-PROJ=/u/cym7/projetos/SaltSegmentation-UNet
-
-tail -f $PROJ/results/scenario_A_seed42/train.log   # log em tempo real
-tail -3 $PROJ/results/*/train.log                   # últimas linhas de todos
-ps aux | grep train.py | grep -v grep               # processos ativos
-nvidia-smi                                          # uso de GPU
-```
+- `TGS_PATH` em `utils/config.py` → `/var/tmp/cym7/datasets/tgs-salt/train`
+- `ENCODER_CHANNELS = (1, 16, 32, 64)` — TGS é grayscale (1 canal de entrada)
+- Interpolação `NEAREST` para máscaras binárias (evita artefatos)
+- `padding=1` no U-Net preserva dimensão espacial sem `CenterCrop`
+- Split estratificado por presença de sal para reprodutibilidade
+- Métricas primárias: **IoU** (critério de early stopping) e **Dice**
+- `--train_dir <path>` sobrescreve `TGS_PATH`; `--test_dir <path>` usa test set externo fixo
 
 ---
 
 ## Estrutura de resultados
 
-Cada run gera automaticamente a pasta `results/<run_tag>/`:
-
 ```
-results/scenario_A_seed42/
+results/<run_tag>/
 ├── train.log       ← saída completa do treinamento
 ├── best_model.pth  ← checkpoint da melhor época (val IoU)
 ├── result.csv      ← métricas finais (test set)
@@ -147,35 +57,17 @@ Arquivo consolidado: `results/summary.csv` (gerado por `evaluate.py`)
 
 ---
 
-## Cenários definidos
+## Outras camadas de instruções
 
-| Cenário | Dados de treino | Objetivo |
-|---------|----------------|----------|
-| A | Real only (~3200 amostras) | Baseline |
-| B | Real + Synthetic (~3200 + 400) | Hipótese do paper |
-
----
-
-## Resultados preliminares (Cenário A)
-
-| N real | Device | Epochs | Test IoU | Test Dice |
-|:------:|:------:|:------:|:--------:|:---------:|
-| 200 | CPU | 29 (early stop) | 0.3102 | 0.3616 |
-| 400 | CPU | 32 (early stop) | 0.3391 | 0.3820 |
-| 800 | CPU | 50 | 0.3630 | 0.4019 |
-| 1600 | CPU | 50 | 0.4011 | 0.4401 |
-| ~3200 | GPU V100 | 57 (early stop) | **0.4312** | **0.4657** |
-
----
-
-## Convenções do código
-
-- `TGS_PATH` em `utils/config.py` aponta para `/var/tmp/cym7/datasets/tgs-salt/train`
-- `ENCODER_CHANNELS = (1, 16, 32, 64)` — TGS é grayscale (1 canal de entrada)
-- Interpolação `NEAREST` para máscaras binárias (evita artefatos)
-- `padding=1` no U-Net preserva dimensão espacial sem `CenterCrop`
-- Split estratificado por presença de sal para reprodutibilidade
-- Métricas primárias: **IoU** (critério de early stopping) e **Dice**
+| Camada | Arquivo | Escopo |
+|--------|---------|--------|
+| Infra & ambiente | `.github/instructions/infra.instructions.md` | `**/*.sh` |
+| Experimentos & datasets | `.github/instructions/experimento.instructions.md` | `Salt-Segmentation-UNet/**/*.py` |
+| Relatório | `.github/instructions/relatorio.instructions.md` | `docs/**/*.md` |
+| Rodar experimento | `.github/prompts/run-experiment.prompt.md` | — |
+| Atualizar relatório | `.github/prompts/update-report.prompt.md` | — |
+| Análise de métricas | `.github/agents/researcher.agent.md` | — |
+| Gerar subset | `.github/skills/generate-subset.md` | — |
 
 ---
 
@@ -190,5 +82,4 @@ Arquivo consolidado: `results/summary.csv` (gerado por `evaluate.py`)
 ## Referências internas
 
 - Protocolo completo: `docs/experimentUNet-protocol.md`
-- Relatórios preliminares: `results/preliminary_results_*.md`
-- Repositório base original: https://github.com/matin-ghorbani/Salt-Segmentation-UNet
+- Repositório base: https://github.com/matin-ghorbani/Salt-Segmentation-UNet
