@@ -6,7 +6,7 @@
 
 ## 1. Conectar ao nó GPU alocado
 
-    ssh no nó de login: atena03.petrobras.biz
+    ssh no nó de login: ssh atena03.petrobras.biz
     solicitar no com gpu: salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00 
 
 ```bash
