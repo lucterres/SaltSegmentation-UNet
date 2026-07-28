@@ -25,6 +25,7 @@ applyTo: "Salt-Segmentation-UNet/**/*.py"
 | subset_split/train_filtered | `/var/tmp/cym7/datasets/subset_split/train_filtered/` | 1293 | Filtrado 10–90% |
 | **subset_split/test** | `/var/tmp/cym7/datasets/subset_split/test/` | 800 | **Test canônico** (dist. real) |
 | subset_1_99 | `/var/tmp/cym7/datasets/subset_1_99/` | 2209 | Filtrado 1–99% (**melhor resultado**) |
+| **subset_2_98** | `/var/tmp/cym7/datasets/subset_2_98/` | **2080** | Filtrado 2–98% (novo) |
 | subset_10_90 | `/var/tmp/cym7/datasets/subset_10_90/` | 1616 | Filtrado 10–90% |
 | Sintéticos sísmicos | `dataset/geometric1600_seismic/pairs1600_seismic/` | 955 | Melhor pool sintético |
 | Sintéticos geométricos | `dataset/geometric1600/pairs1600/` | 1600 | Pool geométrico |

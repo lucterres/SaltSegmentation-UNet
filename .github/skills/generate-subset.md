@@ -23,6 +23,7 @@ Filtra o dataset TGS-Salt pelo percentual de cobertura de sal (`salt_pct`) e cop
 | Nome | MIN | MAX | N esperado |
 |:----:|:---:|:---:|:----------:|
 | `subset_1_99` | 1.0 | 99.0 | ~2209 |
+| `subset_2_98` | 2.0 | 98.0 | 2080 |
 | `subset_5_95` | 5.0 | 95.0 | ~2000 |
 | `subset_10_90` | 10.0 | 90.0 | ~1616 |
 | `subset_20_80` | 20.0 | 80.0 | ~1200 |
