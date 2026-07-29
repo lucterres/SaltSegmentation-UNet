@@ -7,5 +7,11 @@
             "envManager": "ms-python.python:conda",
             "packageManager": "ms-python.python:conda"
         }
-    ]
+    ],
+    "files.watcherExclude": {
+        "//homeunix-rio.petrobras.biz/**": true,
+        "\\\\homeunix-rio.petrobras.biz\\**": true
+    },
+    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe",
+    "git.repositoryDetection": "openEditors"
 }
