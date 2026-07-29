@@ -117,6 +117,10 @@ def main():
     if args.train_dir is not None:
         ds_name = os.path.basename(args.train_dir.rstrip('/\\'))
         run_tag += f'_{ds_name}'
+    elif config.TGS_PATH != '/var/tmp/cym7/datasets/tgs-salt/train':
+        # TGS_PATH customizado via env var — incluir nome do dataset no run_tag
+        ds_name = os.path.basename(config.TGS_PATH.rstrip('/\\'))
+        run_tag += f'_{ds_name}'
     out_dir = os.path.join('..', 'results', run_tag)
     os.makedirs(out_dir, exist_ok=True)
     print(f'[INFO] Run: {run_tag}  device={config.DEVICE}')

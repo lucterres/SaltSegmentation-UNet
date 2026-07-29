@@ -83,6 +83,7 @@ PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 | `--test_dir` | path | None | **Novo** — pasta `images/`+`masks/` para test set fixo externo (pula split interno) |
 
 > **Nota:** quando `--train_dir` é fornecido, o `run_tag` recebe o sufixo do nome da pasta (ex: `scenario_A_seed42_train_filtered`).  
+> Quando `TGS_PATH` é definido via variável de ambiente (ex: `env TGS_PATH=.../subset_1_99`), o sufixo é extraído automaticamente do nome do diretório (ex: `scenario_A_seed42_subset_1_99`).  
 > Quando `--test_dir` é fornecido, o split interno 80/20 é ignorado — o test set externo é usado diretamente.
 
 ---
