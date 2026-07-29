@@ -4,6 +4,13 @@
 
 ---
 
+## 0. Mapear Home Area 
+
+    \\homeunix-rio.petrobras.biz\cym7 -> E:
+    no VSCode abrir pasta do codigo fonte - E:\projetos\SaltSegmentation-UNet
+
+---
+
 ## 1. Conectar ao nó GPU alocado
 
     ssh no nó de login: ssh atena03.petrobras.biz
