@@ -1,6 +1,6 @@
 # Pesos de modelos treinados (arquivos grandes)
 results/scenario*
-
+results/old
 # Histórico e curvas (gerados automaticamente)
 results/**/curves.png
 
@@ -22,3 +22,4 @@ Salt-Segmentation-UNet/dataset/geometric1600_seismic
 Salt-Segmentation-UNet/dataset/synthetic
 Salt-Segmentation-UNet/dataset/subset_10_90/subset_10_90
 Salt-Segmentation-UNet/dataset/subset_split/
+results/old/benchmark_multigpu.csv
