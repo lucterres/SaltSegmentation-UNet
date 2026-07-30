@@ -444,3 +444,52 @@ Esta seção compara o efeito da **filtragem do dataset de treino** mantendo o *
 | `subset_10_90` | **0.8340** | **0.8943** | filtrado (10–90%) |
 
 > **Nota:** o IoU de 0.83 do `subset_10_90` é medido num test set **sem casos triviais**, o que explica o valor muito superior — métricas incomparáveis entre si. O test canônico (800 amostras reais) é o benchmark correto para comparação com o paper.
+
+## 6.1 Comparação adicional — dataset filtrado `1–99%` vs dataset não filtrado
+
+### Protocolo comparativo
+
+Para isolar o efeito da filtragem de cobertura de sal, foi executado um protocolo adicional com:
+
+- **test canônico estratificado de 400 amostras**
+- comparação entre:
+  - **dataset não filtrado** (TGS remanescente)
+  - **dataset filtrado `1–99%`**
+- mesmo test set, mesmas seeds (`42`, `123`, `456`)
+- comparação com **mesmo N de treino**: `1000`, `1456`, `1990`
+
+### Resultado do dataset filtrado `1–99%`
+
+| N treino | Seed 42 | Seed 123 | Seed 456 | Test IoU médio | Test Dice médio |
+|:--------:|:-------:|:--------:|:--------:|:--------------:|:---------------:|
+| 1000 | 0.4091 | 0.4435 | 0.4203 | **0.4243** | **0.4609** |
+| 1456 | 0.4400 | 0.4385 | 0.4384 | **0.4390** | **0.4741** |
+| 1990 | 0.4473 | 0.4442 | 0.4517 | **0.4477** | **0.4810** |
+
+### Resultado do dataset não filtrado — mesmo protocolo `test=400`
+
+| N treino | Seed 42 | Seed 123 | Seed 456 | Test IoU médio | Test Dice médio |
+|:--------:|:-------:|:--------:|:--------:|:--------------:|:---------------:|
+| 1000 | 0.3713 | 0.3871 | 0.3562 | **0.3715** | **0.4133** |
+| 1456 | 0.4004 | 0.4151 | 0.4103 | **0.4086** | **0.4443** |
+| 1990 | 0.4232 | 0.4163 | 0.4131 | **0.4175** | **0.4528** |
+
+### Comparação direta com N pareado
+
+| N treino | Filtrado `1–99%` | Não filtrado | Δ IoU (filtrado − não filtrado) |
+|:--------:|:----------------:|:------------:|:-------------------------------:|
+| 1000 | 0.4243 | 0.3715 | **+0.0528** |
+| 1456 | 0.4390 | 0.4086 | **+0.0304** |
+| 1990 | 0.4477 | 0.4175 | **+0.0302** |
+
+### Interpretação
+
+1. Quando a comparação é feita com **o mesmo número de amostras de treino**, o filtro `1–99%` supera o dataset não filtrado em **todos os tamanhos de N**.
+2. O maior ganho aparece no regime de menos dados (`N=1000`), com **+0.0528 IoU**.
+3. Mesmo em `N=1990`, o filtro ainda mantém vantagem clara: **+0.0302 IoU**.
+4. Portanto, a diferença observada anteriormente a favor do não filtrado era causada principalmente pelo **maior número bruto de amostras** (~3598 vs 1990), e não por melhor qualidade intrínseca do dataset.
+5. Isso reforça a conclusão de que o filtro `1–99%` melhora a eficiência do conjunto real: **menos amostras, mas mais informativas**.
+
+### Conclusão prática
+
+No protocolo definitivo com `test=400`, o conjunto **filtrado `1–99%`** é superior ao não filtrado quando ambos são comparados com o **mesmo número de amostras de treino**. Assim, ele deve permanecer como a melhor base real para os experimentos downstream do paper.
