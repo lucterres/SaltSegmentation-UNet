@@ -12,10 +12,17 @@
 ---
 
 ## 1. Conectar ao nó GPU alocado
+### 1.1 ssh no nó de login
+```bash
+ssh atena03.petrobras.biz
+```
 
-    ssh no nó de login: ssh atena03.petrobras.biz
-    solicitar no com gpu: salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00 
+### 1.2 solicitar no com gpu: 
+```bash
+salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00
+```
 
+### 1.3 conectar 
 ```bash
 # Abrir terminal SSH persistente (substituir pelo nó alocado no dia)
 ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>

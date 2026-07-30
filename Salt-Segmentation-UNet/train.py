@@ -106,6 +106,15 @@ def parse_args():
 # Main
 # ---------------------------------------------------------------------------
 
+def resolve_test_dirs(test_dir: str):
+    base_name = os.path.basename(test_dir.rstrip('/\\')).lower()
+    if base_name == 'images':
+        return test_dir, os.path.join(os.path.dirname(test_dir), 'masks')
+    if base_name == 'masks':
+        return os.path.join(os.path.dirname(test_dir), 'images'), test_dir
+    return os.path.join(test_dir, 'images'), os.path.join(test_dir, 'masks')
+
+
 def main():
     args = parse_args()
     set_seed(args.seed)
@@ -146,8 +155,7 @@ def main():
 
     if args.test_dir:
         # External fixed test set — skip internal train/test split
-        test_img_dir  = os.path.join(args.test_dir, 'images')
-        test_mask_dir = os.path.join(args.test_dir, 'masks')
+        test_img_dir, test_mask_dir = resolve_test_dirs(args.test_dir)
         test_img_list  = sorted(list(paths.list_images(test_img_dir)))
         test_mask_list = sorted(list(paths.list_images(test_mask_dir)))
         ti_stem = {os.path.splitext(os.path.basename(p))[0]: p for p in test_img_list}
