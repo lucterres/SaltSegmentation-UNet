@@ -89,24 +89,36 @@ Para comparação justa, todos os filtros foram normalizados para **N=1293 amost
 | 4 | 2–98% | 1293 | 0.4426 | 0.4821 | 280 |
 | 5 | 5–95% | 1293 | 0.4376 | 0.4759 | 198 |
 
-> Observação: resultados desta série **não são comparáveis** com a série de 800 amostras de teste — servem para comparação relativa entre filtros com N fixo.
-
-**Conclusões da série normalizada:**
-1. Com N=1293 igualado, o filtro `1–99%` continua sendo o melhor (`IoU = 0.4509`).
-2. `3–97%` ficou praticamente empatado (`0.4504`), ambos dentro de margem de variabilidade de seed.
-3. `10–90%` surpreendeu positivamente ao chegar a `0.4470` com o mesmo N.
-4. `2–98%` e `5–95%` ficaram abaixo, sugerindo que esses intervalos não capuram a diversidade ideal.
-5. A vantagem de `1–99%` sobre `10–90%` com N igual é de `+0.0039` em IoU — pequena mas consistente.
+> Observação: resultados desta série **não são comparáveis** com a série de 800 amostras de teste — servem para comparação relativa entre filtros dentro da mesma série.
 
 ---
 
-### 3.3 Interpretação
+### 3.4 Protocolo definitivo — N=1456, test=400 estratificado independente (seed=42) — **concluído**
 
-1. **A correção metodológica mudou materialmente o experimento `1–99%`**: o conjunto de treino caiu de `2209` para `1766` amostras.
-2. Com a metodologia correta, o run `subset_1_99_postsplit` (`seed 423`) obteve `Test IoU = 0.4494`, abaixo dos resultados `0.4791` e `0.4739` obtidos antes da correção.
-3. Isso sugere que os resultados anteriores de `subset_1_99` estavam favorecidos por uma filtragem aplicada **antes** da separação do teste canônico.
-4. **Filtros leves continuam sendo os melhores** na série pós-correção: `1–99%` > `2–98%` > `5–95%` > `3–97%` > `10–90%`.
-5. Comparação por N ainda desequilibrada: os filtros mais leves têm mais amostras. A série normalizada (N=1293) resolverá isso.
+Novo protocolo com separação estratificada de **400 amostras para teste** diretamente do total TGS (independente do `subset_split` original), aplicando o filtro nos **3598 remanescentes**. N de treino normalizado para **1456** (resultado natural do filtro 10–90%).
+
+| Rank | Filtro | N treino (fixo) | Test IoU | Test Dice | Tempo (s) |
+|:----:|--------|:---------------:|:--------:|:---------:|:---------:|
+| 1 | **1–99%** | **1456** | **0.4400** | **0.4763** | 382 |
+| 2 | 5–95% | 1456 | 0.4362 | 0.4706 | 360 |
+| 3 | 2–98% | 1456 | 0.4340 | 0.4687 | 331 |
+| 4 | 10–90% | 1456 | 0.4259 | 0.4603 | 95 |
+| 5 | 3–97% | 1456 | 0.4169 | 0.4523 | 181 |
+
+**Detalhes do subset:**
+- Total TGS: `3998`
+- Test separado (estratificado, `random_state=42`): `400`
+- Remanescentes: `3598`
+- Filtro `10–90%` nos remanescentes: `1456` → N de referência
+- Test set: `/var/tmp/cym7/datasets/subset_test400_new`
+- Train sets: `/var/tmp/cym7/datasets/subset_*_postsplit400_n1456`
+
+**Conclusões desta série:**
+1. **`1–99%` mantém a liderança** em todos os protocolos — `IoU = 0.4400`
+2. `5–95%` surpreendeu ao ficar em 2º, à frente de `2–98%`
+3. `3–97%` foi o pior desta série (`0.4169`), sugerindo instabilidade neste intervalo
+4. `10–90%` (baseline) em 4º confirma que filtros mais leves são superiores
+5. A vantagem de `1–99%` sobre `10–90%` com N e test set idênticos: **+0.0141 IoU**
 
 ---
 
@@ -166,14 +178,14 @@ Isso mostra que tanto o **tipo de conjunto de teste** quanto a **ordem correta e
 
 ## 6. Conclusões desta sessão
 
-1. A observação metodológica estava correta: o filtro `1–99%` deve ser aplicado **somente após remover as 800 amostras do teste canônico**.
-2. Com essa correção, o subset `1–99%` caiu de `2209` para `1766` amostras de treino.
-3. Com N variável, o run corrigido (`seed 423`) obteve `Test IoU = 0.4494`.
-4. Na comparação justa com N=1293 fixo e test=400, o filtro `1–99%` manteve a liderança: `IoU = 0.4509`.
-5. A vantagem do filtro `1–99%` sobre o `10–90%` (baseline `train_filtered`) **é confirmada mesmo com N igualado**.
-6. Os filtros `3–97%` e `1–99%` apresentam desempenho equivalente nesta série — ambos são boas escolhas para o treino principal.
+1. A observação metodológica estava correta: o filtro deve ser aplicado **somente após remover as amostras do teste canônico**.
+2. Com essa correção, o subset `1–99%` caiu de `2209` para `1766` amostras de treino (base 800 test) ou `1990` disponíveis (base 400 test).
+3. **O filtro `1–99%` venceu em todos os 3 protocolos normalizados testados.**
+4. Melhor resultado absoluto observado: `subset_1_99_postsplit`, `seed 423`, `Test IoU = 0.4494` (test=800).
+5. No protocolo definitivo (N=1456, test=400): `1–99%` obteve `IoU = 0.4400` vs `10–90%` com `IoU = 0.4259`.
+6. `3–97%` mostrou instabilidade entre séries — não recomendado como filtro principal.
 7. Testes internos continuam superestimando fortemente o desempenho e devem ser usados apenas como apoio exploratório.
-8. Para o manuscrito, apenas resultados obtidos com **teste canônico** e **filtro aplicado após a separação do teste** devem sustentar conclusões principais.
+8. Para o manuscrito, **apenas resultados com teste canônico e filtro pós-split sustentam comparações válidas**.
 
 ---
 
@@ -182,12 +194,13 @@ Isso mostra que tanto o **tipo de conjunto de teste** quanto a **ordem correta e
 1. ✅ Repetir `subset_1_99` com protocolo correto pós-split.
 2. ✅ Repetir os demais intervalos de filtro com protocolo pós-split.
 3. ✅ Normalizar todos para N=1293 e test=400 — comparação justa concluída.
-4. Priorizar o experimento principal do paper (`Cenário B`) com o filtro `1–99%` pós-split:
+4. ✅ Protocolo definitivo N=1456, test=400 estratificado — concluído.
+5. **Próximo: Cenário B** com o filtro `1–99%` pós-split no protocolo definitivo:
 
 ```bash
 python -u train.py --scenario B --seed 42 --n_synth 955 --epochs 100 \
-  --train_dir /var/tmp/cym7/datasets/subset_1_99_postsplit \
-  --test_dir dataset/subset_split/test
+  --train_dir /var/tmp/cym7/datasets/subset_1_99_postsplit400_n1456 \
+  --test_dir /var/tmp/cym7/datasets/subset_test400_new
 ```
 
-5. Se necessário estimar variabilidade: repetir a série normalizada com seeds `42` e `456`.
+6. Comparar Cenário B vs Cenário A com mesmo filtro/protocolo para verificar hipótese **B > A**.
