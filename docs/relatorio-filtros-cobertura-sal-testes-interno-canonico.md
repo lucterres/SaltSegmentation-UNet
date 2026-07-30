@@ -56,7 +56,18 @@ Filtro aplicado nos 3598 remanescentes (após remover o test set), amostragem pa
 | 4 | **10–90% (baseline)** | **1456** | **0.4259** | **0.4603** | **0.8493** | **48** | **95** |
 | 5 | 3–97% | 1456 | 0.4169 | 0.4523 | — | — | 181 |
 
-### 3.2 Interpretação
+### 3.2 Variabilidade entre seeds — filtro `1–99%` (3 seeds)
+
+| Seed | Test IoU | Test Dice |
+|:----:|:--------:|:---------:|
+| 42 | 0.4400 | 0.4763 |
+| 123 | 0.4385 | 0.4729 |
+| 456 | 0.4384 | 0.4731 |
+| **Média ± DP** | **0.4390 ± 0.0009** | **0.4741 ± 0.0019** |
+
+> Resultado muito estável — desvio padrão de `±0.0009` em IoU confirma reprodutibilidade do filtro `1–99%` neste protocolo.
+
+### 3.3 Interpretação
 
 1. **`1–99%` lidera com `IoU = 0.4400`** — vantagem de `+0.0141` sobre o baseline `10–90%`
 2. `5–95%` e `2–98%` ficaram próximos em 2º e 3º lugar
