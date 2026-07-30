@@ -81,7 +81,8 @@ Consolidar os experimentos realizados nesta sessão com filtros de cobertura de 
 
 | Dataset | Filtro de cobertura de sal | Seed | N total | N treino pool | N treino final | N val | N test | Best val IoU | Test IoU | Test Dice | Épocas | Tempo (s) |
 |---------|----------------------------|:----:|:-------:|:-------------:|:--------------:|:-----:|:------:|:------------:|:--------:|:---------:|:------:|:---------:|
-| subset_1_99 | 1–99% | 123 | ~2209 | 1767 | — | — | ~442 | 0.7852 | 0.7837 | 0.8440 | 45 | 91.3 |
+| subset_1_99 | 1–99% | 42 | 2209 | 1767 | 1590 | 177 | 442 | 0.7329 | 0.7662 | 0.8269 | 46 | 93.6 |
+| subset_1_99 | 1–99% | 123 | 2209 | 1767 | — | — | 442 | 0.7852 | 0.7837 | 0.8440 | 45 | 91.3 |
 | subset_2_98 | 2–98% | 42 | 2080 | 1664 | 1497 | 167 | 416 | 0.8216 | 0.7971 | 0.8613 | 59 | 114.8 |
 | subset_3_97 | 3–97% | 42 | 1996 | 1596 | 1436 | 160 | 400 | 0.8043 | 0.7833 | 0.8492 | 40 | 79.5 |
 | subset_10_90 (`salt10-90_1600`) | 10–90% | 42 | ~1616 | ~1292 | — | — | ~323 | 0.8069 | 0.8340 | 0.8943 | 44 | 183.4 |
@@ -92,11 +93,12 @@ Consolidar os experimentos realizados nesta sessão com filtros de cobertura de 
 
 ### 4.2 Interpretação
 
-1. **Os valores de IoU interno são muito mais altos** (`0.78–0.83`) do que no teste canônico (`0.42–0.48`).
+1. **Os valores de IoU interno são muito mais altos** (`0.76–0.83`) do que no teste canônico (`0.42–0.48`).
 2. Isso ocorre porque treino e teste vêm da **mesma distribuição filtrada**, tornando a tarefa mais fácil.
-3. O run `seed123_subset_1_99` (`best_val_iou = 0.7852`, `test_iou = 0.7837`) é consistente com **teste interno**, pois o desempenho de teste ficou praticamente igual ao de validação.
-4. À medida que o filtro foi apertado de `2–98%` para `3–97%`, o IoU interno caiu de `0.7971` para `0.7833`, indicando perda de diversidade útil.
-5. Mesmo quando o teste interno mostra números muito altos, isso **não implica melhor desempenho no cenário real**.
+3. O run `seed42_subset_1_99` (`best_val_iou = 0.7329`, `test_iou = 0.7662`) confirma que o protocolo interno para esse subset produz métricas muito acima do teste canônico.
+4. O run `seed123_subset_1_99` (`best_val_iou = 0.7852`, `test_iou = 0.7837`) segue o mesmo padrão de **teste interno**, embora com seed mais favorável.
+5. À medida que o filtro foi apertado de `2–98%` para `3–97%`, o IoU interno caiu de `0.7971` para `0.7833`, indicando perda de diversidade útil.
+6. Mesmo quando o teste interno mostra números muito altos, isso **não implica melhor desempenho no cenário real**.
 
 ---
 
@@ -105,7 +107,8 @@ Consolidar os experimentos realizados nesta sessão com filtros de cobertura de 
 | Dataset | Filtro | Tipo de teste | Test IoU | Test Dice | Comparável ao paper? |
 |---------|--------|---------------|----------|-----------|----------------------|
 | subset_1_99 | 1–99% | canônico | 0.4791 | 0.5058 | ✅ |
-| subset_1_99 | 1–99% | interno | 0.7837 | 0.8440 | ❌ |
+| subset_1_99 | 1–99% | interno (seed 42) | 0.7662 | 0.8269 | ❌ |
+| subset_1_99 | 1–99% | interno (seed 123) | 0.7837 | 0.8440 | ❌ |
 | subset_2_98 | 2–98% | canônico | 0.4761 | 0.5034 | ✅ |
 | subset_2_98 | 2–98% | interno | 0.7971 | 0.8613 | ❌ |
 | subset_3_97 | 3–97% | interno | 0.7833 | 0.8492 | ❌ |
@@ -120,6 +123,7 @@ Para o mesmo conceito de filtro (`subset_2_98`), o IoU muda de:
 No caso de `subset_1_99`, a diferença também é grande:
 
 - **0.4791** no **teste canônico** (`seed42_subset_1_99`)
+- **0.7662** no **teste interno** (`seed42_subset_1_99`)
 - **0.7837** no **teste interno** (`seed123_subset_1_99`)
 
 Isso mostra que o tipo de conjunto de teste altera drasticamente a interpretação do experimento.
@@ -130,7 +134,7 @@ Isso mostra que o tipo de conjunto de teste altera drasticamente a interpretaç�
 
 1. **O melhor filtro observado no teste canônico foi `1–99%`** (`IoU = 0.4791`).
 2. **O filtro `2–98%` ficou muito próximo** (`IoU = 0.4761`) e confirma que remover extremos ajuda.
-3. **`subset_1_99` possui também um run interno (`seed123`)**, com `IoU = 0.7837`, que não deve ser comparado ao ranking principal.
+3. **`subset_1_99` possui agora dois runs internos (`seed42` e `seed123`)**, com `IoU = 0.7662` e `0.7837`, ambos não comparáveis ao ranking principal.
 4. **O filtro `3–97%` só foi avaliado com teste interno**, portanto não pode entrar no ranking principal do paper.
 5. **Testes internos superestimam fortemente o desempenho** e devem ser usados apenas como apoio exploratório.
 6. Para o manuscrito, **apenas o teste canônico deve sustentar comparações e conclusões principais**.
