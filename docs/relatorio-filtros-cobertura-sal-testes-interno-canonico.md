@@ -7,195 +7,93 @@
 
 ## 1. Objetivo
 
-Consolidar os experimentos realizados nesta sessão com filtros de cobertura de sal no dataset TGS-Salt, destacando a diferença entre dois protocolos de avaliação:
+Determinar o melhor filtro de cobertura de sal para o dataset de treino TGS-Salt, usando o **protocolo definitivo** de avaliação:
 
-- **Teste canônico** — conjunto externo fixo com 800 amostras reais (`subset_split/test`)
-- **Teste interno** — split 80/20 gerado a partir do próprio dataset filtrado
-- **Correção metodológica posterior** — os filtros de cobertura destinados ao treino devem ser aplicados **somente após remover as 800 amostras do teste canônico**
+- Split estratificado de **400 amostras** para teste canônico, feito diretamente do total TGS antes de qualquer filtragem
+- Filtro aplicado nos **3598 remanescentes**
+- N de treino normalizado para **1456** em todos os filtros (resultado natural do filtro 10–90%)
+- Seed de treino: **42**
 
 > **Regra central:** métricas obtidas com **teste interno** não são comparáveis com métricas do **teste canônico**.
 
 ---
 
-## 2. Definição dos protocolos de teste
+## 2. Protocolo definitivo
 
-### 2.1 Teste canônico
+### 2.1 Separação do teste canônico
 
-- Origem: `dataset/subset_split/test`
-- Tamanho: **800 amostras reais**
-- Distribuição: próxima da distribuição real do problema
-- Uso: comparação principal do paper
-- Vantagem: permite comparação justa entre datasets e cenários
-- Regra correta: qualquer filtro de cobertura aplicado ao treino deve usar apenas as **3198 amostras remanescentes**, nunca o conjunto completo de 3998
+| Parâmetro | Valor |
+|-----------|-------|
+| Total TGS | 3998 |
+| Test set (estratificado, `random_state=42`) | **400** |
+| Remanescentes para treino | **3598** |
+| N treino normalizado | **1456** |
+| Test set path | `/var/tmp/cym7/datasets/subset_test400_new` |
 
-### 2.2 Teste interno
+### 2.2 Filtros avaliados
 
-- Origem: split 80/20 do próprio dataset filtrado
-- Tamanho: depende do filtro aplicado
-- Distribuição: mesma distribuição do treino filtrado
-- Uso: exploração rápida / diagnóstico interno
-- Limitação: tende a produzir métricas infladas
+Filtro aplicado nos 3598 remanescentes (após remover o test set), amostragem para N=1456 com `random_state=42`:
 
----
-
-## 3. Experimentos com teste canônico
-
-### 3.1 Tabela consolidada
-
-| Dataset | Filtro de cobertura de sal | Cenário | Seed | N treino | N synth | Best val IoU | Test IoU | Test Dice | Épocas | Tempo (s) | Observação |
-|---------|----------------------------|:-------:|:----:|:--------:|:-------:|:------------:|:--------:|:---------:|:------:|:---------:|------------|
-| TGS completo (GEM Desktop) | nenhum | A | 42 | 3198 | 0 | 0.4417 | 0.4270 | 0.4609 | 50 | 17608.7 | baseline |
-| subset_1_99 | 1–99% | A | 42 | 2209 | 0 | 0.7826 | 0.4791 | 0.5058 | 55 | 142.4 | **pré-correção metodológica** |
-| subset_1_99 | 1–99% | A | 456 | 2209 | 0 | 0.7934 | 0.4739 | 0.5016 | 46 | 134.0 | **pré-correção metodológica** |
-| **subset_1_99_postsplit** | **1–99%** | **A** | **423** | **1766** | **0** | **0.7979** | **0.4494** | **0.4843** | **76** | **181.2** | **pós-correção ✅** |
-| subset_2_98_postsplit | 2–98% | A | 423 | 1665 | 0 | 0.7761 | 0.4359 | 0.4713 | 40 | 298.1 | pós-correção ✅ |
-| subset_3_97_postsplit | 3–97% | A | 423 | 1605 | 0 | 0.7806 | 0.4270 | 0.4640 | 39 | 285.5 | pós-correção ✅ |
-| subset_5_95_postsplit | 5–95% | A | 423 | 1480 | 0 | 0.8458 | 0.4293 | 0.4641 | 54 | 325.6 | pós-correção ✅ |
-| subset_10_90_postsplit | 10–90% | A | 423 | 1293 | 0 | 0.8385 | 0.4250 | 0.4606 | 57 | 317.9 | pós-correção ✅ |
-| subset_2_98 | 2–98% | A | 42 | 2080 | 0 | 0.8063 | 0.4761 | 0.5034 | 49 | 116.0 | **pré-correção metodológica** |
-| train_filtered | 10–90% | A | 42 | 1293 | 0 | 0.8517 | 0.4201 | 0.4553 | 56 | 213.7 | pós-split por construção |
-| train_filtered | 10–90% | A | 123 | 1293 | 0 | 0.8507 | 0.4286 | 0.4621 | 54 | 208.6 | pós-split por construção |
-| train_filtered | 10–90% | A | 456 | 1293 | 0 | 0.8371 | 0.4223 | 0.4559 | 38 | 164.9 | pós-split por construção |
-| train_filtered + sísmicos | 10–90% | B | 42 | 1293 | 955 | 0.8514 | 0.4308 | 0.4672 | 47 | 121.9 | pós-split por construção |
+| Filtro | N disponível pós-split | N usado |
+|--------|:----------------------:|:-------:|
+| 1–99% | 1990 | 1456 |
+| 2–98% | 1876 | 1456 |
+| 3–97% | 1805 | 1456 |
+| 5–95% | 1670 | 1456 |
+| 10–90% | 1456 | 1456 |
 
 ---
 
-### 3.2 Ranking no teste canônico (pós-correção metodológica — N variável)
+## 3. Resultados — Protocolo definitivo (N=1456, test=400, seed=42)
 
-| Rank | Dataset | Filtro | N treino | Test IoU | Test Dice | Observação |
-|------|---------|--------|:--------:|----------|-----------|------------|
-| 1 | **subset_1_99_postsplit** | **1–99%** | **1766** | **0.4494** | **0.4843** | melhor filtro pós-correção ✅ |
-| 2 | subset_2_98_postsplit | 2–98% | 1665 | 0.4359 | 0.4713 | |
-| 3 | subset_5_95_postsplit | 5–95% | 1480 | 0.4293 | 0.4641 | |
-| 4 | train_filtered + sísmicos | 10–90% | 1293+955 | 0.4308 | 0.4672 | Cenário B |
-| 5 | train_filtered (seed 123) | 10–90% | 1293 | 0.4286 | 0.4621 | |
-| 6 | TGS completo | nenhum | 3198 | 0.4270 | 0.4609 | baseline |
-| 7 | subset_3_97_postsplit | 3–97% | 1605 | 0.4270 | 0.4640 | |
-| 8 | subset_10_90_postsplit | 10–90% | 1293 | 0.4250 | 0.4606 | |
+### 3.1 Ranking
 
-> ⚠️ Comparação ainda desequilibrada: N de treino varia de 1293 a 1766 entre os filtros.
+| Rank | Filtro | N treino | Test IoU | Test Dice | Best val IoU | Épocas | Tempo (s) |
+|:----:|--------|:--------:|:--------:|:---------:|:------------:|:------:|:---------:|
+| 1 | **1–99%** | **1456** | **0.4400** | **0.4763** | — | — | 382 |
+| 2 | 5–95% | 1456 | 0.4362 | 0.4706 | — | — | 360 |
+| 3 | 2–98% | 1456 | 0.4340 | 0.4687 | — | — | 331 |
+| 4 | **10–90% (baseline)** | **1456** | **0.4259** | **0.4603** | **0.8493** | **48** | **95** |
+| 5 | 3–97% | 1456 | 0.4169 | 0.4523 | — | — | 181 |
 
----
+### 3.2 Interpretação
 
-### 3.3 Experimentos normalizados (N=1293, test canônico 400 amostras) — **concluído**
-
-Para comparação justa, todos os filtros foram normalizados para **N=1293 amostras** de treino (o menor da série), avaliados no **test canônico reduzido a 400 amostras** (`seed 423`).
-
-| Rank | Filtro | N treino (fixo) | Test IoU | Test Dice | Tempo (s) |
-|:----:|--------|:---------------:|:--------:|:---------:|:---------:|
-| 1 | **1–99%** | **1293** | **0.4509** | **0.4870** | 301 |
-| 2 | 3–97% | 1293 | 0.4504 | 0.4868 | 300 |
-| 3 | 10–90% | 1293 | 0.4470 | 0.4841 | 322 |
-| 4 | 2–98% | 1293 | 0.4426 | 0.4821 | 280 |
-| 5 | 5–95% | 1293 | 0.4376 | 0.4759 | 198 |
-
-> Observação: resultados desta série **não são comparáveis** com a série de 800 amostras de teste — servem para comparação relativa entre filtros dentro da mesma série.
-
----
-
-### 3.4 Protocolo definitivo — N=1456, test=400 estratificado independente (seed=42) — **concluído**
-
-Novo protocolo com separação estratificada de **400 amostras para teste** diretamente do total TGS (independente do `subset_split` original), aplicando o filtro nos **3598 remanescentes**. N de treino normalizado para **1456** (resultado natural do filtro 10–90%).
-
-| Rank | Filtro | N treino (fixo) | Test IoU | Test Dice | Tempo (s) |
-|:----:|--------|:---------------:|:--------:|:---------:|:---------:|
-| 1 | **1–99%** | **1456** | **0.4400** | **0.4763** | 382 |
-| 2 | 5–95% | 1456 | 0.4362 | 0.4706 | 360 |
-| 3 | 2–98% | 1456 | 0.4340 | 0.4687 | 331 |
-| 4 | 10–90% | 1456 | 0.4259 | 0.4603 | 95 |
-| 5 | 3–97% | 1456 | 0.4169 | 0.4523 | 181 |
-
-**Detalhes do subset:**
-- Total TGS: `3998`
-- Test separado (estratificado, `random_state=42`): `400`
-- Remanescentes: `3598`
-- Filtro `10–90%` nos remanescentes: `1456` → N de referência
-- Test set: `/var/tmp/cym7/datasets/subset_test400_new`
-- Train sets: `/var/tmp/cym7/datasets/subset_*_postsplit400_n1456`
-
-**Conclusões desta série:**
-1. **`1–99%` mantém a liderança** em todos os protocolos — `IoU = 0.4400`
-2. `5–95%` surpreendeu ao ficar em 2º, à frente de `2–98%`
-3. `3–97%` foi o pior desta série (`0.4169`), sugerindo instabilidade neste intervalo
-4. `10–90%` (baseline) em 4º confirma que filtros mais leves são superiores
+1. **`1–99%` lidera com `IoU = 0.4400`** — vantagem de `+0.0141` sobre o baseline `10–90%`
+2. `5–95%` e `2–98%` ficaram próximos em 2º e 3º lugar
+3. **`10–90%` em 4º** confirma que filtros mais leves são superiores com N igualado
+4. **`3–97%` foi o pior** (`0.4169`) — instável, não recomendado como filtro principal
 5. A vantagem de `1–99%` sobre `10–90%` com N e test set idênticos: **+0.0141 IoU**
 
 ---
 
-## 4. Experimentos com teste interno
+## 4. Experimentos com teste interno (referência histórica)
 
-### 4.1 Tabela consolidada
+> ⚠️ Resultados não comparáveis com o protocolo definitivo. Registrados apenas como referência histórica.
 
-| Dataset | Filtro de cobertura de sal | Seed | N total | N treino pool | N treino final | N val | N test | Best val IoU | Test IoU | Test Dice | Épocas | Tempo (s) |
-|---------|----------------------------|:----:|:-------:|:-------------:|:--------------:|:-----:|:------:|:------------:|:--------:|:---------:|:------:|:---------:|
-| subset_1_99 | 1–99% | 42 | 2209 | 1767 | 1590 | 177 | 442 | 0.7329 | 0.7662 | 0.8269 | 46 | 93.6 |
-| subset_1_99 | 1–99% | 123 | 2209 | 1767 | — | — | 442 | 0.7852 | 0.7837 | 0.8440 | 45 | 91.3 |
-| subset_2_98 | 2–98% | 42 | 2080 | 1664 | 1497 | 167 | 416 | 0.8216 | 0.7971 | 0.8613 | 59 | 114.8 |
-| subset_3_97 | 3–97% | 42 | 1996 | 1596 | 1436 | 160 | 400 | 0.8043 | 0.7833 | 0.8492 | 40 | 79.5 |
-| subset_10_90 (`salt10-90_1600`) | 10–90% | 42 | ~1616 | ~1292 | — | — | ~323 | 0.8069 | 0.8340 | 0.8943 | 44 | 183.4 |
-
-> Observação: em teste interno, `n_real` registrado no `result.csv` corresponde ao tamanho do **train pool** após a separação treino/teste, não ao total bruto do dataset filtrado.
+| Dataset | Filtro | Seed | Test IoU | Test Dice | Observação |
+|---------|--------|:----:|:--------:|:---------:|------------|
+| subset_1_99 | 1–99% | 42 | 0.7662 | 0.8269 | teste interno ❌ |
+| subset_1_99 | 1–99% | 123 | 0.7837 | 0.8440 | teste interno ❌ |
+| subset_2_98 | 2–98% | 42 | 0.7971 | 0.8613 | teste interno ❌ |
+| subset_3_97 | 3–97% | 42 | 0.7833 | 0.8492 | teste interno ❌ |
+| subset_10_90 | 10–90% | 42 | 0.8340 | 0.8943 | teste interno ❌ |
 
 ---
 
-### 4.2 Interpretação
+## 5. Conclusões
 
-1. **Os valores de IoU interno são muito mais altos** (`0.76–0.83`) do que no teste canônico (`0.42–0.48`).
-2. Isso ocorre porque treino e teste vêm da **mesma distribuição filtrada**, tornando a tarefa mais fácil.
-3. O run `seed42_subset_1_99` (`best_val_iou = 0.7329`, `test_iou = 0.7662`) confirma que o protocolo interno para esse subset produz métricas muito acima do teste canônico.
-4. O run `seed123_subset_1_99` (`best_val_iou = 0.7852`, `test_iou = 0.7837`) segue o mesmo padrão de **teste interno**, embora com seed mais favorável.
-5. À medida que o filtro foi apertado de `2–98%` para `3–97%`, o IoU interno caiu de `0.7971` para `0.7833`, indicando perda de diversidade útil.
-6. Mesmo quando o teste interno mostra números muito altos, isso **não implica melhor desempenho no cenário real**.
-
----
-
-## 5. Comparação entre teste canônico e teste interno
-
-| Dataset | Filtro | Tipo de teste | Test IoU | Test Dice | Comparável ao paper? |
-|---------|--------|---------------|----------|-----------|----------------------|
-| subset_1_99 | 1–99% | canônico (seed 42, pré-correção) | 0.4791 | 0.5058 | ⚠️ provisório |
-| subset_1_99 | 1–99% | canônico (seed 456, pré-correção) | 0.4739 | 0.5016 | ⚠️ provisório |
-| subset_1_99_postsplit | 1–99% | canônico (seed 423, pós-correção) | 0.4494 | 0.4843 | ✅ |
-| subset_1_99 | 1–99% | interno (seed 42) | 0.7662 | 0.8269 | ❌ |
-| subset_1_99 | 1–99% | interno (seed 123) | 0.7837 | 0.8440 | ❌ |
-| subset_2_98 | 2–98% | canônico (pré-correção) | 0.4761 | 0.5034 | ⚠️ provisório |
-| subset_2_98 | 2–98% | interno | 0.7971 | 0.8613 | ❌ |
-| subset_3_97 | 3–97% | interno | 0.7833 | 0.8492 | ❌ |
-
-### Diferença crítica
-
-Para o filtro `1–99%`, o IoU observado passou a ser:
-
-- **0.4791** no **teste canônico** (`seed42_subset_1_99`, pré-correção)
-- **0.4739** no **teste canônico** (`seed456_subset_1_99`, pré-correção)
-- **0.4494** no **teste canônico** (`seed423_subset_1_99_postsplit`, pós-correção)
-- **0.7662** no **teste interno** (`seed42_subset_1_99`)
-- **0.7837** no **teste interno** (`seed123_subset_1_99`)
-
-Isso mostra que tanto o **tipo de conjunto de teste** quanto a **ordem correta entre split e filtro** alteram drasticamente a interpretação do experimento.
+1. **O filtro `1–99%` é o melhor** para treino no protocolo definitivo (`IoU = 0.4400`).
+2. O N de treino disponível com `1–99%` pós-split é `1990` — amostrado para `1456` para comparação justa.
+3. `3–97%` mostrou instabilidade entre séries — não recomendado como filtro principal.
+4. Testes internos superestimam fortemente o desempenho e devem ser usados apenas como apoio exploratório.
+5. Para o manuscrito, **apenas resultados com o protocolo definitivo sustentam comparações válidas**.
 
 ---
 
-## 6. Conclusões desta sessão
+## 6. Próximos passos
 
-1. A observação metodológica estava correta: o filtro deve ser aplicado **somente após remover as amostras do teste canônico**.
-2. Com essa correção, o subset `1–99%` caiu de `2209` para `1766` amostras de treino (base 800 test) ou `1990` disponíveis (base 400 test).
-3. **O filtro `1–99%` venceu em todos os 3 protocolos normalizados testados.**
-4. Melhor resultado absoluto observado: `subset_1_99_postsplit`, `seed 423`, `Test IoU = 0.4494` (test=800).
-5. No protocolo definitivo (N=1456, test=400): `1–99%` obteve `IoU = 0.4400` vs `10–90%` com `IoU = 0.4259`.
-6. `3–97%` mostrou instabilidade entre séries — não recomendado como filtro principal.
-7. Testes internos continuam superestimando fortemente o desempenho e devem ser usados apenas como apoio exploratório.
-8. Para o manuscrito, **apenas resultados com teste canônico e filtro pós-split sustentam comparações válidas**.
-
----
-
-## 7. Próximos passos recomendados
-
-1. ✅ Repetir `subset_1_99` com protocolo correto pós-split.
-2. ✅ Repetir os demais intervalos de filtro com protocolo pós-split.
-3. ✅ Normalizar todos para N=1293 e test=400 — comparação justa concluída.
-4. ✅ Protocolo definitivo N=1456, test=400 estratificado — concluído.
-5. **Próximo: Cenário B** com o filtro `1–99%` pós-split no protocolo definitivo:
+1. ✅ Protocolo definitivo N=1456, test=400 estratificado — concluído.
+2. **Cenário B** com filtro `1–99%` no protocolo definitivo:
 
 ```bash
 python -u train.py --scenario B --seed 42 --n_synth 955 --epochs 100 \
@@ -203,4 +101,4 @@ python -u train.py --scenario B --seed 42 --n_synth 955 --epochs 100 \
   --test_dir /var/tmp/cym7/datasets/subset_test400_new
 ```
 
-6. Comparar Cenário B vs Cenário A com mesmo filtro/protocolo para verificar hipótese **B > A**.
+3. Comparar Cenário B vs Cenário A com mesmo filtro/protocolo para verificar hipótese **B > A**.
