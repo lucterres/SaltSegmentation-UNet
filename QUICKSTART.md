@@ -25,6 +25,7 @@ salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00
 ### 1.3 conectar 
 ```bash
 # Abrir terminal SSH persistente (substituir pelo nó alocado no dia)
+# Para descobrir o nó após reconexão: ssh atena03 → squeue -u cym7 → ver NODELIST
 ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n07
 # ex: atn2b03n01, atn2b04n02, etc.
 ```
