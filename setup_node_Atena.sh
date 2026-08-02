@@ -5,8 +5,8 @@
 #   bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
 #
 # O que faz:
-#   1. Extrai o dataset TGS do tar (NFS → SSD local), se necessário
-#   2. Cria o venv e instala dependências, se necessário
+#   1. Extrai o dataset TGS do tar (DFS → SSD local), se necessário
+#   2. Restaura o venv do tar (DFS → SSD local), se necessário
 #   3. Imprime os comandos prontos para rodar os experimentos
 #
 # Para apenas verificar o estado do nó (sem modificar nada):
@@ -16,7 +16,7 @@ set -e
 
 PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
-VENV_BACKUP="/u/cym7/venvs_backup/salt-unet"
+VENV_BACKUP_TAR="//dfs.petrobras.biz/cientifico/cenpes/pdiep/res_ee/projetos30/cym7/envs/salt-unet-venv.tar"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
 TGS_BACKUP="//dfs.petrobras.biz/cientifico/cenpes/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar"
 REQUIREMENTS="$PROJ/Salt-Segmentation-UNet/requirements.txt"
@@ -44,15 +44,15 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 2. Venv — restaura do backup na home se não existir no SSD local
+# 2. Venv — restaura do backup tar em DFS se não existir no SSD local
 # ---------------------------------------------------------------------------
 echo ""
 echo "[2/2] Venv..."
 
 if [ ! -f "$VENV/bin/python" ]; then
-    echo "  Restaurando venv de $VENV_BACKUP → $VENV ..."
+    echo "  Restaurando venv de $VENV_BACKUP_TAR → $(dirname $VENV) ..."
     mkdir -p "$(dirname "$VENV")"
-    cp -r "$VENV_BACKUP" "$(dirname "$VENV")/"
+    tar -xf "$VENV_BACKUP_TAR" -C "$(dirname "$VENV")"
     # Corrigir pyvenv.cfg para o Python do nó atual
     PYTHON_BIN=$(which python3)
     sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" "$VENV/pyvenv.cfg"
