@@ -5,3 +5,4 @@ dataset/train/masks
 *.pth
 *.txt
 test.png
+dataset/
