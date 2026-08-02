@@ -226,3 +226,8 @@ Executar Cenário B (real + 1600 sintético Salt-Segmentation-UNet\dataset\geome
 ✅ **Ponto ótimo: N=1600** — ganho +2.6%, baixa variabilidade (dp=0.0022), convergência robusta.  
 ✅ **Mais sintéticos (955→1600) = mais ganho** em todos os regimes.  
 ➡️ **Para o manuscrito:** reportar N=1600, Fase III como resultado principal — B supera A de forma consistente e robusta.
+
+Fase IV (Cenário B)
+prompt:
+
+Executar Cenário B (real + 1600 sintético Salt-Segmentation-UNet\dataset\geometric1600\pairs1600) para N=1200,1600 e 2000 com seeds 42, 123, 456 para verificar se a adição de dados sintéticos geometricos sem sintese sismica superam o baseline do Cenário A estabelecido aqui. uma gpu para cada run
