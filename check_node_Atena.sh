@@ -2,9 +2,9 @@
 # check_node_Atena.sh — Verifica o estado do nó (sem modificar nada)
 #
 # Uso:
-#   bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
+#   bash ~/code/SaltSegment-UNet/check_node_Atena.sh
 
-PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
+PROJ="/u/cym7/code/SaltSegment-UNet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
 

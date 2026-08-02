@@ -20,8 +20,8 @@
 | **Python** | 3.8.16 (Miniconda base) |
 | **venv (SSD local)** | `/var/tmp/cym7/venvs/salt-unet/` |
 | **venv (home backup)** | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente** |
-| **Código** | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
-| **Resultados** | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
+| **Código** | `/u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet/` |
+| **Resultados** | `/u/cym7/code/SaltSegment-UNet/results/` |
 | **Dataset TGS (SSD local)** | `/var/tmp/cym7/datasets/tgs-salt/train/` (SSD NVMe, 3998 pares) |
 | **Dataset TGS (home backup)** | `~/datasets/tgs-salt/tgs-salt.tar` ← **arquivo tar persistente** |
 
@@ -282,7 +282,7 @@ nohup python -u train.py --scenario A --seed 42 --n_real 2000 --epochs 100 > $PR
 ### Rodar tudo de uma vez (script completo)
 
 ```bash
-bash /u/cym7/projetos/SaltSegmentation-UNet/setup_and_run.sh
+bash /u/cym7/code/SaltSegment-UNet/setup_and_run.sh
 ```
 
 ---
