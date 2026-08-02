@@ -18,7 +18,7 @@ PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
 VENV_BACKUP="/u/cym7/venvs_backup/salt-unet"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
-TGS_BACKUP="$HOME/datasets/tgs-salt/tgs-salt.tar"
+TGS_BACKUP="//dfs.petrobras.biz/cientifico/cenpes/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar"
 REQUIREMENTS="$PROJ/Salt-Segmentation-UNet/requirements.txt"
 
 echo "============================================"
@@ -27,7 +27,7 @@ echo " Data       : $(date)"
 echo "============================================"
 
 # ---------------------------------------------------------------------------
-# 1. Dataset — copia do backup na home para SSD local se ainda não existir
+# 1. Dataset — copia do backup persistente em DFS para SSD local se ainda não existir
 # ---------------------------------------------------------------------------
 echo ""
 echo "[1/2] Dataset local..."
