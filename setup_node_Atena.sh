@@ -2,7 +2,7 @@
 # setup_node_Atena.sh — Prepara o nó de computação para os experimentos
 #
 # Executar após conectar a qualquer nó Atena:
-#   bash ~/code/SaltSegment-UNet/setup_node_Atena.sh
+#   bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
 #
 # O que faz:
 #   1. Extrai o dataset TGS do tar (DFS → SSD local), se necessário
@@ -10,11 +10,11 @@
 #   3. Imprime os comandos prontos para rodar os experimentos
 #
 # Para apenas verificar o estado do nó (sem modificar nada):
-#   bash ~/code/SaltSegment-UNet/check_node_Atena.sh
+#   bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
 
 set -e
 
-PROJ="/u/cym7/code/SaltSegment-UNet"
+PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
 VENV_BACKUP_TAR="//dfs.petrobras.biz/cientifico/cenpes/atena_projetos/cym7/envs/salt-unet-venv.tar"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"

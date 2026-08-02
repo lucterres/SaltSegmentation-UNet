@@ -35,7 +35,7 @@ ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n07
 ## 2. Verificar / preparar o ambiente
 
 ```bash
-bash ~/code/SaltSegment-UNet/check_node_Atena.sh
+bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
 ```
 
 O script verifica (sem modificar nada):
@@ -46,7 +46,7 @@ O script verifica (sem modificar nada):
 **Se algum item aparecer como AUSENTE**, execute o setup completo:
 
 ```bash
-bash ~/code/SaltSegment-UNet/setup_node_Atena.sh
+bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
 ```
 
 O `setup_node_Atena.sh` restaura automaticamente:
@@ -74,7 +74,7 @@ python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_avail
 > Sempre definir `PROJ` antes de rodar. Os diretórios de resultado são criados automaticamente pelo `train.py`.
 
 ```bash
-PROJ=/u/cym7/code/SaltSegment-UNet
+PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 ```
 
 ### Argumentos do `train.py`
@@ -124,7 +124,7 @@ nohup python -u train.py --scenario A --seed 42 --n_real $N --epochs 100 \
 # 400 sintéticos originais:
 ln -sfn /var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400 dataset/synthetic
 # 955 sintéticos sísmicos (melhor resultado):
-ln -sfn /u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic dataset/synthetic
+ln -sfn /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic dataset/synthetic
 
 ls dataset/synthetic/  # deve mostrar: images  masks
 
@@ -139,7 +139,7 @@ nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 > $P
 
 ```bash
 # Pré-requisito: extrair subset_split no SSD local
-tar -xf /u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet/dataset/subset_split.tar \
+tar -xf /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/subset_split.tar \
     -C /var/tmp/cym7/datasets/
 
 SPLIT=/var/tmp/cym7/datasets/subset_split
@@ -173,7 +173,7 @@ nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 \
 
 ```bash
 # Pré-requisito: extrair subset_10_90 no SSD local
-tar -xf /u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet/dataset/subset_10_90.tar \
+tar -xf /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/subset_10_90.tar \
     -C /var/tmp/cym7/datasets/
 
 mkdir -p $PROJ/results/scenario_{A,B}_seed42_subset1090
@@ -222,7 +222,7 @@ nvidia-smi --query-gpu=index,name,memory.used,memory.free,utilization.gpu --form
 ## 6. Avaliação final
 
 ```bash
-cd /u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet
+cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
 python -u evaluate.py --results_dir ../results
 # Saída: ../results/summary.csv
 ```
@@ -272,8 +272,8 @@ python -u evaluate.py --results_dir ../results
 
 | Recurso | Path |
 |---------|------|
-| Código | `/u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet/` |
-| Resultados | `/u/cym7/code/SaltSegment-UNet/results/` |
+| Código | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
+| Resultados | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
 | venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
 | venv (backup home) | `/u/cym7/venvs_backup/salt-unet/` |
 | Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` |
