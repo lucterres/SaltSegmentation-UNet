@@ -23,3 +23,4 @@ Salt-Segmentation-UNet/dataset/synthetic
 Salt-Segmentation-UNet/dataset/subset_10_90/subset_10_90
 Salt-Segmentation-UNet/dataset/subset_split/
 results/old/benchmark_multigpu.csv
+Salt-Segmentation-UNet/dataset/pairs1600_seismic
