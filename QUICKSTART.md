@@ -25,7 +25,7 @@ salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00
 ### 1.3 conectar 
 ```bash
 # Abrir terminal SSH persistente (substituir pelo nó alocado no dia)
-ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
+ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n07
 # ex: atn2b03n01, atn2b04n02, etc.
 ```
 
@@ -52,6 +52,7 @@ O `setup_node_Atena.sh` restaura automaticamente:
 1. Dataset — extrai de `~/datasets/tgs-salt/tgs-salt.tar` → `/var/tmp/cym7/datasets/`
 2. Venv — copia de `/u/cym7/venvs_backup/salt-unet/` → `/var/tmp/cym7/venvs/` e corrige `pyvenv.cfg`
 
+Importações Python (import torch, import numpy, etc.) carregam dezenas de .so do venv → no NFS isso pode levar 10–30s extras por processo
 ---
 
 ## 3. Ativar o ambiente e ir para o projeto
