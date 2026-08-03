@@ -50,8 +50,8 @@ bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
 ```
 
 O `setup_node_Atena.sh` restaura automaticamente:
-1. Dataset — extrai de `\\dfs.petrobras.biz\cientifico\cenpes\atena_projetos\cym7\dataset\tgsSalt\tgs-salt.tar` → `/var/tmp/cym7/datasets/`
-2. Venv — extrai de `\\dfs.petrobras.biz\cientifico\cenpes\atena_projetos\cym7\envs\salt-unet-venv.tar` → `/var/tmp/cym7/venvs/` e corrige `pyvenv.cfg`
+1. Dataset — extrai de `/nethome/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar` → `/var/tmp/cym7/datasets/`
+2. Venv — extrai de `/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar` → `/var/tmp/cym7/venvs/` e corrige `pyvenv.cfg`
 
 Importações Python (import torch, import numpy, etc.) carregam dezenas de .so do venv → no NFS isso pode levar 10–30s extras por processo
 ---
@@ -277,7 +277,7 @@ python -u evaluate.py --results_dir ../results
 | venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
 | venv (backup home) | `/u/cym7/venvs_backup/salt-unet/` |
 | Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` |
-| Dataset TGS (tar backup) | `\\dfs.petrobras.biz\cientifico\cenpes\atena_projetos\cym7\dataset\tgsSalt\tgs-salt.tar` |
-| venv (tar backup) | `\\dfs.petrobras.biz\cientifico\cenpes\atena_projetos\cym7\envs\salt-unet-venv.tar` |
+| Dataset TGS (tar backup) | `/nethome/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar` |
+| venv (tar backup) | `/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar` |
 | Dados sintéticos | `/var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400/` |
 | Symlink sintéticos | `dataset/synthetic/` → path acima |

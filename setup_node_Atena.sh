@@ -16,9 +16,9 @@ set -e
 
 PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
-VENV_BACKUP_TAR="//dfs.petrobras.biz/cientifico/cenpes/atena_projetos/cym7/envs/salt-unet-venv.tar"
+VENV_BACKUP_TAR="/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
-TGS_BACKUP="//dfs.petrobras.biz/cientifico/cenpes/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar"
+TGS_BACKUP="/nethome/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar"
 REQUIREMENTS="$PROJ/Salt-Segmentation-UNet/requirements.txt"
 
 echo "============================================"
