@@ -155,3 +155,29 @@ Cada diretório contém: `best_model.pth`, `history.csv`, `result.csv`
 - [ ] Atualizar `docs/relatorio-final-r21-downstream.md` com esses resultados
 - [ ] Atualizar `_v7.tex` → `\subsection{Downstream Segmentation Evaluation}`
 - [ ] Atualizar `response_to_reviewers.md` → seção R2.1
+
+---
+
+## 8. Ranking geral — test set canônico (800 amostras reais)
+
+> ⚠️ Apenas runs com `--test_dir /var/tmp/cym7/datasets/subset_split/test` são comparáveis entre si. Runs com test set interno filtrado (IoU ~0.77–0.85) **não entram neste ranking**.
+
+| Rank | Run | Cenário | N real | N synth | Test IoU | Test Dice |
+|:----:|-----|:-------:|:------:|:-------:|:--------:|:---------:|
+| 🏆 1 | B + random_gamma | B | 1200 | 1200 | **0.4580** | **0.4892** |
+| 2 | B + random_gamma | B | 1600 | 1000 | 0.4517 | 0.4826 |
+| 3 | B + random_gamma | B | 1600 | 1600 | 0.4469 | 0.4788 |
+| 4 | B + clahe | B | 1200 | 1200 | 0.4401 | 0.4748 |
+| 5 | B + optical_distortion | B | 1200 | 1200 | 0.4367 | 0.4712 |
+| 6 | B + random_brightness_contrast | B | 1200 | 1200 | 0.4328 | 0.4654 |
+| 7 | B + train_filtered + sísmico | B | 1293 | 955 | 0.4308 | 0.4672 |
+| 8 | B + random_gamma | B | 1000 | 1600 | 0.4287 | 0.4636 |
+| 9 | A — train_filtered seed 123 | A | 1293 | 0 | 0.4279 | 0.4637 |
+| 10 | B + elastic_transform | B | 1200 | 1200 | 0.4256 | 0.4621 |
+| 11 | B + grid_distortion | B | 1200 | 1200 | 0.4249 | 0.4586 |
+| 12 | A — train_filtered seed 456 | A | 1293 | 0 | 0.4201 | 0.4553 |
+| 13 | A — train_filtered seed 42 | A | 1293 | 0 | 0.4179 | 0.4532 |
+
+> ✅ **B + random_gamma (N=1200+1200) é o melhor resultado absoluto** de todo o projeto no test set canônico.  
+> ✅ Os **top-6 resultados** são todos métodos Albumentations do Cenário DA.  
+> ✅ Cenário B supera Cenário A em todas as configurações comparáveis.
