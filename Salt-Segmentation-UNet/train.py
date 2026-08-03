@@ -99,6 +99,10 @@ def parse_args():
                    help='External test directory with images/ and masks/ subfolders. '
                         'When provided, skips the internal train/test split and uses '
                         'this fixed test set instead.')
+    p.add_argument('--synth_dir', type=str, default=None,
+                   help='Synthetic dataset directory with images/ and masks/ subfolders. '
+                        'Overrides dataset/synthetic symlink for scenario B. '
+                        'The folder name is appended to run_tag.')
     return p.parse_args()
 
 
@@ -130,6 +134,9 @@ def main():
         # TGS_PATH customizado via env var — incluir nome do dataset no run_tag
         ds_name = os.path.basename(config.TGS_PATH.rstrip('/\\'))
         run_tag += f'_{ds_name}'
+    if args.synth_dir is not None and args.scenario == 'B':
+        synth_name = os.path.basename(args.synth_dir.rstrip('/\\'))
+        run_tag += f'_{synth_name}_ns{args.n_synth}'
     out_dir = os.path.join('..', 'results', run_tag)
     os.makedirs(out_dir, exist_ok=True)
     print(f'[INFO] Run: {run_tag}  device={config.DEVICE}')
@@ -212,8 +219,14 @@ def main():
     train_dataset = SegmentationDataset(tr_imgs, tr_masks, img_tf, mask_tf, augment=True)
 
     if args.scenario == 'B':
-        synth_imgs  = sorted(list(paths.list_images(config.SYNTH_IMAGE_PATH)))
-        synth_masks = sorted(list(paths.list_images(config.SYNTH_MASK_PATH)))
+        if args.synth_dir is not None:
+            synth_img_path  = os.path.join(args.synth_dir, 'images')
+            synth_mask_path = os.path.join(args.synth_dir, 'masks')
+        else:
+            synth_img_path  = config.SYNTH_IMAGE_PATH
+            synth_mask_path = config.SYNTH_MASK_PATH
+        synth_imgs  = sorted(list(paths.list_images(synth_img_path)))
+        synth_masks = sorted(list(paths.list_images(synth_mask_path)))
         if args.n_synth < len(synth_imgs):
             synth_imgs  = synth_imgs[:args.n_synth]
             synth_masks = synth_masks[:args.n_synth]
@@ -312,6 +325,11 @@ def main():
             imgs, masks = imgs.to(config.DEVICE), masks.to(config.DEVICE)
             iou, dice = compute_metrics(model(imgs), masks)
             iou_acc += iou; dice_acc += dice; nb += 1
+    if nb == 0:
+        raise RuntimeError(
+            f'[ERROR] test_loader is empty — check --test_dir path: {args.test_dir}\n'
+            f'        Run: ls {args.test_dir}/images/ to verify.'
+        )
     test_iou  = iou_acc  / nb
     test_dice = dice_acc / nb
 
