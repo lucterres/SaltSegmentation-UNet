@@ -7,7 +7,13 @@
 ## 0. Mapear Home Area 
 
     \\homeunix-rio.petrobras.biz\cym7 -> E:
-    no VSCode abrir pasta do codigo fonte - I:\code\SaltSegment-UNet
+    no VSCode abrir pasta do codigo fonte - I:\0code\SaltSegment-Unet
+
+Definir a variável base do projeto no shell:
+
+```bash
+export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
+```
 
 ---
 
@@ -35,7 +41,7 @@ ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n07
 ## 2. Verificar / preparar o ambiente
 
 ```bash
-bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
+bash $PROJ/check_node_Atena.sh
 ```
 
 O script verifica (sem modificar nada):
@@ -46,7 +52,7 @@ O script verifica (sem modificar nada):
 **Se algum item aparecer como AUSENTE**, execute o setup completo:
 
 ```bash
-bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
+bash $PROJ/setup_node_Atena.sh
 ```
 
 O `setup_node_Atena.sh` restaura automaticamente:
@@ -60,7 +66,7 @@ Importações Python (import torch, import numpy, etc.) carregam dezenas de .so 
 
 ```bash
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/code/SaltSegment-UNet/Salt-Segmentation-UNet
+cd $PROJ/Salt-Segmentation-UNet
 
 # Confirmar GPU
 python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_available(), '| GPUs:', torch.cuda.device_count())"
@@ -73,9 +79,7 @@ python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_avail
 
 > Sempre definir `PROJ` antes de rodar. Os diretórios de resultado são criados automaticamente pelo `train.py`.
 
-```bash
-PROJ=/u/cym7/projetos/SaltSegmentation-UNet
-```
+> `PROJ` já foi exportada na seção inicial.
 
 ### Argumentos do `train.py`
 
@@ -124,7 +128,7 @@ nohup python -u train.py --scenario A --seed 42 --n_real $N --epochs 100 \
 # 400 sintéticos originais:
 ln -sfn /var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400 dataset/synthetic
 # 955 sintéticos sísmicos (melhor resultado):
-ln -sfn /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic dataset/synthetic
+ln -sfn $PROJ/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic dataset/synthetic
 
 ls dataset/synthetic/  # deve mostrar: images  masks
 
@@ -139,7 +143,7 @@ nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 > $P
 
 ```bash
 # Pré-requisito: extrair subset_split no SSD local
-tar -xf /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/subset_split.tar \
+tar -xf $PROJ/Salt-Segmentation-UNet/dataset/subset_split.tar \
     -C /var/tmp/cym7/datasets/
 
 SPLIT=/var/tmp/cym7/datasets/subset_split
@@ -173,7 +177,7 @@ nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 \
 
 ```bash
 # Pré-requisito: extrair subset_10_90 no SSD local
-tar -xf /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/dataset/subset_10_90.tar \
+tar -xf $PROJ/Salt-Segmentation-UNet/dataset/subset_10_90.tar \
     -C /var/tmp/cym7/datasets/
 
 mkdir -p $PROJ/results/scenario_{A,B}_seed42_subset1090
@@ -202,8 +206,6 @@ nohup python -u train.py --scenario B --seed 456 --n_real 800 --n_synth 400 --ep
 ## 5. Monitorar treinamentos
 
 ```bash
-PROJ=/u/cym7/projetos/SaltSegmentation-UNet
-
 # Acompanhar um run em tempo real
 tail -f $PROJ/results/scenario_A_seed42/train.log
 
@@ -222,7 +224,7 @@ nvidia-smi --query-gpu=index,name,memory.used,memory.free,utilization.gpu --form
 ## 6. Avaliação final
 
 ```bash
-cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
+cd $PROJ/Salt-Segmentation-UNet
 python -u evaluate.py --results_dir ../results
 # Saída: ../results/summary.csv
 ```
@@ -272,8 +274,8 @@ python -u evaluate.py --results_dir ../results
 
 | Recurso | Path |
 |---------|------|
-| Código | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
-| Resultados | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
+| Código | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/Salt-Segmentation-UNet/` |
+| Resultados | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/results/` |
 | venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
 | venv (backup home) | `/u/cym7/venvs_backup/salt-unet/` |
 | Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` |

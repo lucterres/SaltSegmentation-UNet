@@ -2,9 +2,9 @@
 # check_node_Atena.sh — Verifica o estado do nó (sem modificar nada)
 #
 # Uso:
-#   bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
+#   bash $PROJ/check_node_Atena.sh
 
-PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
+PROJ="/nethome/atena_projetos/cym7/0code/SaltSegment-Unet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
 
@@ -48,7 +48,7 @@ fi
 # ---------------------------------------------------------------------------
 echo ""
 echo "[3/3] GPUs (nvidia-smi)..."
-if command -v nvidia-smi &> /dev/null; then
+if command -v nvidia-smi > /dev/null 2>&1; then
     nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader | \
         awk -F',' '{printf "  GPU %s: %s | total %s | livre %s\n", $1, $2, $3, $4}'
 else

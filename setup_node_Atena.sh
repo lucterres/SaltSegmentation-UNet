@@ -2,7 +2,7 @@
 # setup_node_Atena.sh — Prepara o nó de computação para os experimentos
 #
 # Executar após conectar a qualquer nó Atena:
-#   bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
+#   bash $PROJ/setup_node_Atena.sh
 #
 # O que faz:
 #   1. Extrai o dataset TGS do tar (DFS → SSD local), se necessário
@@ -10,11 +10,11 @@
 #   3. Imprime os comandos prontos para rodar os experimentos
 #
 # Para apenas verificar o estado do nó (sem modificar nada):
-#   bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
+#   bash $PROJ/check_node_Atena.sh
 
 set -e
 
-PROJ="/u/cym7/projetos/SaltSegmentation-UNet"
+PROJ="/nethome/atena_projetos/cym7/0code/SaltSegment-Unet"
 VENV="/var/tmp/cym7/venvs/salt-unet"
 VENV_BACKUP_TAR="/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar"
 LOCAL_TGS="/var/tmp/cym7/datasets/tgs-salt"
@@ -36,7 +36,7 @@ if [ -d "$LOCAL_TGS/train/images" ]; then
     N=$(ls "$LOCAL_TGS/train/images" | wc -l)
     echo "  OK  Dataset já presente: $N imagens"
 else
-    echo "  Extraindo $TGS_BACKUP → $(dirname $LOCAL_TGS) ..."
+    echo "  Extraindo $TGS_BACKUP → $(dirname "$LOCAL_TGS") ..."
     mkdir -p "$(dirname "$LOCAL_TGS")"
     tar -xf "$TGS_BACKUP" -C "$(dirname "$LOCAL_TGS")"
     N=$(ls "$LOCAL_TGS/train/images" 2>/dev/null | wc -l || echo "?")
@@ -50,12 +50,11 @@ echo ""
 echo "[2/2] Venv..."
 
 if [ ! -f "$VENV/bin/python" ]; then
-    echo "  Restaurando venv de $VENV_BACKUP_TAR → $(dirname $VENV) ..."
+    echo "  Restaurando venv de $VENV_BACKUP_TAR → $(dirname "$VENV") ..."
     mkdir -p "$(dirname "$VENV")"
     tar -xf "$VENV_BACKUP_TAR" -C "$(dirname "$VENV")"
-    # Corrigir pyvenv.cfg para o Python do nó atual
     PYTHON_BIN=$(which python3)
-    sed -i "s|^home = .*|home = $(dirname $PYTHON_BIN)|" "$VENV/pyvenv.cfg"
+    sed -i "s|^home = .*|home = $(dirname "$PYTHON_BIN")|" "$VENV/pyvenv.cfg"
     echo "  OK  Venv restaurado e reconfigurado."
 else
     PY_VER=$("$VENV/bin/python" --version 2>&1)

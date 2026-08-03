@@ -7,12 +7,11 @@ description: Executa um experimento de treinamento (Cenário A ou B) no cluster 
 ## Pré-condições
 
 ```bash
-# Verificar / restaurar ambiente no nó alocado
-bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
+export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
+bash $PROJ/check_node_Atena.sh
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
-cd /u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet
+cd $PROJ/Salt-Segmentation-UNet
 
-PROJ=/u/cym7/projetos/SaltSegmentation-UNet
 SPLIT=/var/tmp/cym7/datasets/subset_split
 ```
 

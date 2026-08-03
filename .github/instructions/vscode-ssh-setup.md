@@ -95,7 +95,7 @@ ssh atena
 4. Uma nova janela do VSCode abre já dentro do servidor
 5. Abrir a pasta do projeto:
    ```
-   /u/cym7/projetos/SaltSegmentation-UNet
+   /nethome/atena_projetos/cym7/0code/SaltSegment-Unet
    ```
 
 > **Dica:** usar `File → Add Folder to Workspace…` para adicionar a pasta do dataset

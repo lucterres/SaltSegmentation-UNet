@@ -10,7 +10,9 @@
     ],
     "files.watcherExclude": {
         "//homeunix-rio.petrobras.biz/**": true,
-        "\\\\homeunix-rio.petrobras.biz\\**": true
+        "\\\\homeunix-rio.petrobras.biz\\**": true,
+        "//dfs.petrobras.biz/**": true,
+        "\\\\dfs.petrobras.biz\\**": true
     },
     "git.path": "C:\\Program Files\\Git\\cmd\\git.exe",
     "git.repositoryDetection": "openEditors"

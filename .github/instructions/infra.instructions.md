@@ -4,7 +4,7 @@ applyTo: "**/*.sh"
 
 # Instruções — Infraestrutura & Ambiente
 
-**Manuscrito:** Access-2026-27912 | **Última atualização:** 2026-07-27
+**Manuscrito:** Access-2026-27912 | **Última atualização:** 2026-08-02
 
 ---
 
@@ -12,24 +12,24 @@ applyTo: "**/*.sh"
 
 | Recurso | Path absoluto |
 |---------|--------------|
-| Código `train.py` | `/u/cym7/projetos/SaltSegmentation-UNet/Salt-Segmentation-UNet/` |
-| Resultados | `/u/cym7/projetos/SaltSegmentation-UNet/results/` |
-| Relatório final | `/u/cym7/projetos/SaltSegmentation-UNet/docs/relatorio-final-r21-downstream.md` |
+| Código `train.py` | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/Salt-Segmentation-UNet/` |
+| Resultados | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/results/` |
+| Relatório final | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/docs/relatorio-final-r21-downstream.md` |
 | venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
-| venv (home backup) | `/u/cym7/venvs_backup/salt-unet/` ← **cópia persistente entre nós** |
+| venv (backup tar) | `/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar` |
 | Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` (3998 pares) |
-| Dataset TGS (tar) | `~/datasets/tgs-salt/tgs-salt.tar` |
+| Dataset TGS (tar) | `/nethome/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar` |
 | **subset_split/train_filtered** | `/var/tmp/cym7/datasets/subset_split/train_filtered/` (1293 amostras, 10–90%) |
 | **subset_split/test** | `/var/tmp/cym7/datasets/subset_split/test/` (800 amostras, dist. real) ← **test canônico** |
 | **subset_1_99** | `/var/tmp/cym7/datasets/subset_1_99/` (2209 amostras, 1–99%) |
 | **subset_10_90** | `/var/tmp/cym7/datasets/subset_10_90/` (1616 amostras, 10–90%) |
-| Sintéticos sísmicos | `dataset/geometric1600_seismic/pairs1600_seismic/` (955 pares) |
+| Sintéticos sísmicos | `$PROJ/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic/` (955 pares) |
 | Symlink sintéticos | `dataset/synthetic` → path acima |
-| subset_split tar | `dataset/subset_split.tar` |
-| subset_10_90 tar | `dataset/subset_10_90.tar` |
+| subset_split tar | `$PROJ/Salt-Segmentation-UNet/dataset/subset_split.tar` |
+| subset_10_90 tar | `$PROJ/Salt-Segmentation-UNet/dataset/subset_10_90.tar` |
 
 > **Atenção:** `/var/tmp/` é local a cada nó SLURM e **não persiste** entre alocações.  
-> O venv de referência fica em `/u/cym7/venvs_backup/salt-unet/` (NFS home, persistente).
+> O venv de referência fica em `/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar` (NFS, persistente).
 
 ---
 
@@ -55,12 +55,20 @@ ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
 
 ---
 
+## Variável de ambiente (definir primeiro)
+
+```bash
+export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
+```
+
+---
+
 ## Verificar / configurar ambiente no nó
 
 ```bash
-bash ~/projetos/SaltSegmentation-UNet/check_node_Atena.sh
+bash $PROJ/check_node_Atena.sh
 # Se ausente ou desatualizado:
-bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
+bash $PROJ/setup_node_Atena.sh
 ```
 
 ---
@@ -68,9 +76,9 @@ bash ~/projetos/SaltSegmentation-UNet/setup_node_Atena.sh
 ## Migração do venv para novo nó (fazer 1× por nó)
 
 ```bash
-# 1. Restaurar do backup para o SSD local
+# 1. Restaurar do backup tar para o SSD local
 mkdir -p /var/tmp/cym7/venvs
-cp -r /u/cym7/venvs_backup/salt-unet /var/tmp/cym7/venvs/
+tar -xf /nethome/atena_projetos/cym7/envs/salt-unet-venv.tar -C /var/tmp/cym7/venvs/
 
 # 2. Corrigir pyvenv.cfg
 PYTHON_BIN=$(which python3)
