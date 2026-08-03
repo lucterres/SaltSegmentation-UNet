@@ -32,7 +32,7 @@ salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00
 ```bash
 # Abrir terminal SSH persistente (substituir pelo nó alocado no dia)
 # Para descobrir o nó após reconexão: ssh atena03 → squeue -u cym7 → ver NODELIST
-ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n07
+ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n03
 # ex: atn2b03n01, atn2b04n02, etc.
 ```
 
@@ -40,6 +40,7 @@ ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n07
 
 ## 2. Verificar / preparar o ambiente
 
+export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
 ```bash
 bash $PROJ/check_node_Atena.sh
 ```
