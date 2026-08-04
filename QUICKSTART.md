@@ -18,10 +18,16 @@ export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
 ---
 
 ## 1. Conectar ao nó GPU alocado
-### 1.1 ssh no nó de login
+
+### 1.0 Verifique se tem job rodando
+ a coluna NODELIST mostrará o nó alocado
+
 ```bash
-ssh atena03.petrobras.biz
+squeue -u cym7
 ```
+
+### 1.1 ssh no nó de login
+ssh atena03.petrobras.biz
 
 ### 1.2 solicitar no com gpu: 
 ```bash
