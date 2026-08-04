@@ -195,3 +195,70 @@ A comparação justa é **mesmo N de treino real**:
 | B + random_gamma (mesmo N) | 1200 | 1200 | 0.458 | **+0.038** ✅ |
 
 **Conclusão real:** No regime de **poucos dados reais (N=1200)**, random_gamma DA (+3.8pp) é eficaz. Com **dados reais abundantes (N=3998)**, mais dados reais superam DA. O ganho de DA é relevante exatamente quando os dados reais são escassos — que é o cenário do paper (R2.1).
+
+---
+
+## 9. Correção de data leakage — datasets `*1600clean`
+
+### Problema identificado
+
+Os datasets `*1600` originais foram gerados a partir das **3998 imagens TGS completas**, incluindo as **800 do test set canônico**. A análise mostrou que **305 das 1600 amostras DA (19.1%)** tinham origem em imagens do test set — data leakage direto.
+
+### Correção aplicada
+
+O script `generate_albumentations_da.py` foi atualizado com `--exclude_csv` para excluir os IDs do test set canônico:
+
+```bash
+python DataAugmentation/generate_albumentations_da.py \
+    --src D:\dataset\tgs-salt\train \
+    --exclude_csv dataset/subset_split/split_stats.csv \
+    --exclude_split test \
+    --out_suffix 1600clean --n 1600
+```
+
+Pool limpo: **3199 imagens** (3998 − 800 do test + 1 máscara vazia aceita).
+
+### Resultados — datasets limpos vs originais (seed 42, N=1200+1200)
+
+| Método | Test IoU (original) | Test IoU (clean) | Δ leakage | Test Dice (clean) |
+|--------|:-------------------:|:----------------:|:---------:|:-----------------:|
+| elastic_transform | 0.4256 | 0.4280 | +0.002 | 0.4641 |
+| grid_distortion | 0.4249 | 0.4246 | −0.000 | 0.4592 |
+| optical_distortion | 0.4367 | 0.4232 | −0.013 | 0.4597 |
+| clahe | 0.4401 | 0.4164 | −0.024 | 0.4529 |
+| random_brightness_contrast | 0.4328 | **0.4327** | −0.000 | **0.4683** |
+| random_gamma | 0.4580 | 0.4310 | −0.027 | 0.4647 |
+
+> ⚠️ Os resultados `*1600` (com leakage) eram inflados — especialmente `random_gamma` (−0.027) e `clahe` (−0.024).  
+> ✅ Os resultados `*1600clean` são os **valores válidos para publicação**.
+
+### Ranking corrigido — datasets clean (seed 42, N=1200+1200)
+
+| Rank | Método | Test IoU | Test Dice | Δ vs A (N=1200) |
+|:----:|--------|:--------:|:---------:|:---------------:|
+| 🏆 1 | random_brightness_contrast | **0.4327** | **0.4683** | **+0.047** |
+| 2 | random_gamma | 0.4310 | 0.4647 | +0.045 |
+| 3 | elastic_transform | 0.4280 | 0.4641 | +0.042 |
+| 4 | grid_distortion | 0.4246 | 0.4592 | +0.038 |
+| 5 | optical_distortion | 0.4232 | 0.4597 | +0.037 |
+| 6 | clahe | 0.4164 | 0.4529 | +0.030 |
+| — | **A baseline (N=1200)** | **0.3862** | **0.4252** | — |
+| — | A TGS completo (N=3998) | 0.473 ± 0.003 | 0.501 ± 0.003 | ref |
+
+### Conclusão corrigida
+
+> ✅ **Todos os 6 métodos Albumentations (clean) superam o Cenário A com N=1200** em +3.0 a +4.7pp IoU.  
+> ✅ **random_brightness_contrast** é o novo campeão com pool limpo (0.4327 vs 0.4310 do random_gamma).  
+> ⚠️ **Nenhum método supera o Cenário A com TGS completo (0.473)** — mais dados reais ainda ganham.  
+> 📌 **O ganho de DA é real e válido no regime de dados escassos (N=1200)**, mesmo após correção do leakage.
+
+### Run tags (artefatos clean)
+
+| Método | Run tag |
+|--------|---------|
+| elastic_transform | `scenario_B_seed42_nreal1200_train_elastic_transform1600clean_ns1200` |
+| grid_distortion | `scenario_B_seed42_nreal1200_train_grid_distortion1600clean_ns1200` |
+| optical_distortion | `scenario_B_seed42_nreal1200_train_optical_distortion1600clean_ns1200` |
+| clahe | `scenario_B_seed42_nreal1200_train_clahe1600clean_ns1200` |
+| random_brightness_contrast | `scenario_B_seed42_nreal1200_train_random_brightness_contrast1600clean_ns1200` |
+| random_gamma | `scenario_B_seed42_nreal1200_train_random_gamma1600clean_ns1200` |
