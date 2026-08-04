@@ -164,20 +164,34 @@ Cada diretório contém: `best_model.pth`, `history.csv`, `result.csv`
 
 | Rank | Run | Cenário | N real | N synth | Test IoU | Test Dice |
 |:----:|-----|:-------:|:------:|:-------:|:--------:|:---------:|
-| 🏆 1 | B + random_gamma | B | 1200 | 1200 | **0.4580** | **0.4892** |
-| 2 | B + random_gamma | B | 1600 | 1000 | 0.4517 | 0.4826 |
-| 3 | B + random_gamma | B | 1600 | 1600 | 0.4469 | 0.4788 |
-| 4 | B + clahe | B | 1200 | 1200 | 0.4401 | 0.4748 |
-| 5 | B + optical_distortion | B | 1200 | 1200 | 0.4367 | 0.4712 |
-| 6 | B + random_brightness_contrast | B | 1200 | 1200 | 0.4328 | 0.4654 |
-| 7 | B + train_filtered + sísmico | B | 1293 | 955 | 0.4308 | 0.4672 |
-| 8 | B + random_gamma | B | 1000 | 1600 | 0.4287 | 0.4636 |
-| 9 | A — train_filtered seed 123 | A | 1293 | 0 | 0.4279 | 0.4637 |
-| 10 | B + elastic_transform | B | 1200 | 1200 | 0.4256 | 0.4621 |
-| 11 | B + grid_distortion | B | 1200 | 1200 | 0.4249 | 0.4586 |
-| 12 | A — train_filtered seed 456 | A | 1293 | 0 | 0.4201 | 0.4553 |
-| 13 | A — train_filtered seed 42 | A | 1293 | 0 | 0.4179 | 0.4532 |
+| 🏆 1 | A — TGS completo (seed 123) | A | 3998 | 0 | **0.4766** | **0.5043** |
+| 2 | A — TGS completo (seed 42) | A | 3998 | 0 | 0.4730 | 0.5004 |
+| 3 | A — TGS completo (seed 456) | A | 3998 | 0 | 0.4706 | 0.4980 |
+| — | **A — TGS completo média** | **A** | **3998** | **0** | **0.473 ± 0.003** | **0.501 ± 0.003** |
+| 4 | B + random_gamma | B | 1200 | 1200 | 0.4580 | 0.4892 |
+| 5 | B + random_gamma | B | 1600 | 1000 | 0.4517 | 0.4826 |
+| 6 | B + random_gamma | B | 1600 | 1600 | 0.4469 | 0.4788 |
+| 7 | B + clahe | B | 1200 | 1200 | 0.4401 | 0.4748 |
+| 8 | B + optical_distortion | B | 1200 | 1200 | 0.4367 | 0.4712 |
+| 9 | B + random_brightness_contrast | B | 1200 | 1200 | 0.4328 | 0.4654 |
+| 10 | B + train_filtered + sísmico | B | 1293 | 955 | 0.4308 | 0.4672 |
+| 11 | B + random_gamma | B | 1000 | 1600 | 0.4287 | 0.4636 |
+| 12 | A — train_filtered seed 123 | A | 1293 | 0 | 0.4279 | 0.4637 |
+| 13 | B + elastic_transform | B | 1200 | 1200 | 0.4256 | 0.4621 |
+| 14 | B + grid_distortion | B | 1200 | 1200 | 0.4249 | 0.4586 |
+| 15 | A — train_filtered seed 456 | A | 1293 | 0 | 0.4201 | 0.4553 |
 
-> ✅ **B + random_gamma (N=1200+1200) é o melhor resultado absoluto** de todo o projeto no test set canônico.  
-> ✅ Os **top-6 resultados** são todos métodos Albumentations do Cenário DA.  
-> ✅ Cenário B supera Cenário A em todas as configurações comparáveis.
+### Interpretação corrigida
+
+> ⚠️ **O Cenário A com TGS completo (3998 amostras) supera o Cenário B + random_gamma (N=1200+1200)** no test set canônico.
+
+A comparação justa é **mesmo N de treino real**:
+
+| Config | N real | N synth | Test IoU | Δ |
+|--------|:------:|:-------:|:--------:|:---:|
+| A — TGS completo | 3998 | 0 | **0.473** | ref |
+| B + random_gamma | 1200 | 1200 | 0.458 | −0.015 |
+| A — train_filtered | 1293 | 0 | 0.420 | ref |
+| B + random_gamma (mesmo N) | 1200 | 1200 | 0.458 | **+0.038** ✅ |
+
+**Conclusão real:** No regime de **poucos dados reais (N=1200)**, random_gamma DA (+3.8pp) é eficaz. Com **dados reais abundantes (N=3998)**, mais dados reais superam DA. O ganho de DA é relevante exatamente quando os dados reais são escassos — que é o cenário do paper (R2.1).
