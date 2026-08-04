@@ -262,3 +262,49 @@ Pool limpo: **3199 imagens** (3998 − 800 do test + 1 máscara vazia aceita).
 | clahe | `scenario_B_seed42_nreal1200_train_clahe1600clean_ns1200` |
 | random_brightness_contrast | `scenario_B_seed42_nreal1200_train_random_brightness_contrast1600clean_ns1200` |
 | random_gamma | `scenario_B_seed42_nreal1200_train_random_gamma1600clean_ns1200` |
+
+---
+
+## 10. Baseline A canônico correto — train_pool (3198 amostras, sem leakage)
+
+### Problema no baseline anterior
+
+O run `scenario_A_seed*_train` usou `--train_dir $TGS` com as **3998 imagens completas**, incluindo as 800 do test set canônico — mesmo problema de leakage do Cenário B.
+
+### Correção
+
+Criado `dataset/train_pool/` com as 3198 amostras TGS que **não pertencem ao test set** (via `create_train_pool.py`). Treino com `--train_dir $PROJ/Salt-Segmentation-UNet/dataset/train_pool`.
+
+### Resultados — Cenário A limpo (3198 reais, 3 seeds)
+
+| Seed | N real | Test IoU | Test Dice | Épocas | Tempo (s) |
+|:----:|:------:|:--------:|:---------:|:------:|:---------:|
+| 42  | 3198 | 0.4245 | 0.4576 | 48 | 221 |
+| 123 | 3198 | 0.4343 | 0.4668 | 57 | 207 |
+| 456 | 3198 | 0.4321 | 0.4638 | 52 | 236 |
+| **Média ± std** | | **0.430 ± 0.005** | **0.463 ± 0.005** | | |
+
+### Comparação: com leakage vs sem leakage
+
+| Config | N real (efetivo) | Test IoU | Inflação leakage |
+|--------|:----------------:|:--------:|:----------------:|
+| ~~A — TGS completo (com leakage)~~ | ~~3998 (inclui 800 test)~~ | ~~0.473~~ | ~~+4.3pp~~ |
+| **A — train_pool (sem leakage)** | **3198** | **0.430** | **—** |
+
+### Tabela comparativa final — todos os cenários canônicos
+
+| Config | N real | N synth | Test IoU | Test Dice | Δ vs A (N=1200) |
+|--------|:------:|:-------:|:--------:|:---------:|:---------------:|
+| A — train_pool | 3198 | 0 | **0.430 ± 0.005** | **0.463 ± 0.005** | ref grande |
+| **B + random_brightness_contrast (clean)** | **1200** | **1200** | **0.4327** | **0.4683** | **+0.047** |
+| B + random_gamma (clean) | 1200 | 1200 | 0.4310 | 0.4647 | +0.045 |
+| B + elastic_transform (clean) | 1200 | 1200 | 0.4280 | 0.4641 | +0.042 |
+| B + grid_distortion (clean) | 1200 | 1200 | 0.4246 | 0.4592 | +0.038 |
+| B + optical_distortion (clean) | 1200 | 1200 | 0.4232 | 0.4597 | +0.037 |
+| B + clahe (clean) | 1200 | 1200 | 0.4164 | 0.4529 | +0.030 |
+| A — train_filtered | 1293 | 0 | 0.4237 | 0.4578 | +0.037 |
+| **A — N=1200** | **1200** | **0** | **0.3862** | **0.4252** | **—** |
+
+> ✅ **B + DA (clean) com N=1200+1200 supera A com N=1200 em +3–5pp** — ganho real e válido.  
+> ✅ **B + random_brightness_contrast (0.4327) ≈ A — train_pool (0.430)** — com apenas 1200 reais + 1200 sintéticos, o Cenário B atinge desempenho próximo ao de 3198 reais.  
+> 📌 **Conclusão para R2.1:** DA Albumentations compensa eficazmente a escassez de dados reais.
