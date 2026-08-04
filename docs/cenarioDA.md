@@ -78,7 +78,26 @@ Datasets: `*1600clean` — gerados excluindo as 800 imagens do test set canônic
 | **random_brightness_contrast** | **int** | **61** | **0.4348** | **0.4327** | **0.4683** | **178** |
 | random_gamma | int | 74 | 0.4274 | 0.4310 | 0.4647 | 268 |
 
-> 🏆 Melhor resultado (clean): **random_brightness_contrast** — Test IoU=**0.4327**, Test Dice=**0.4683**
+> 🏆 Melhor resultado (clean, seed 42): **random_brightness_contrast** — Test IoU=**0.4327**, Test Dice=**0.4683**
+
+---
+
+## 3b. Consistência estatística — random_brightness_contrast e random_gamma (3 seeds)
+
+| Método | Seed 42 | Seed 123 | Seed 456 | **Média ± std** | **Dice médio** |
+|--------|:-------:|:--------:|:--------:|:---------------:|:--------------:|
+| **random_brightness_contrast** | **0.4327** | **0.4219** | **0.4218** | **0.425 ± 0.006** | **0.460 ± 0.007** |
+| random_gamma | 0.4310 | 0.4206 | 0.4153 | 0.422 ± 0.008 | 0.459 ± 0.006 |
+| **A — N=1200 (ref)** | 0.3862 | 0.3821 | 0.3817 | **0.383 ± 0.002** | **0.423 ± 0.002** |
+| **A — train_pool N=3198 (ref)** | 0.4245 | 0.4343 | 0.4321 | **0.430 ± 0.005** | **0.463 ± 0.005** |
+
+**Δ vs A (N=1200) — estatisticamente consistente (3 seeds):**
+- random_brightness_contrast: **+0.042 ± 0.006** IoU
+- random_gamma: **+0.039 ± 0.007** IoU
+
+> ✅ O ganho de DA é **consistente nas 3 seeds** — não é artefato de uma seed favorável.  
+> ✅ **B + RBC (0.425) ≈ A train_pool (0.430)** com apenas 37% dos dados reais.  
+> ✅ **random_brightness_contrast** é o método mais consistente (menor desvio padrão).
 
 ---
 
@@ -145,7 +164,7 @@ Transforms de **intensidade** preservam a geometria das máscaras e perturbam ap
 
 ## 8. Próximos passos
 
-- [ ] Rodar seeds 123 e 456 para `random_brightness_contrast` e `random_gamma` clean — confirmar consistência estatística
-- [ ] Atualizar `docs/relatorio-final-r21-downstream.md` com esses resultados
+- [x] Rodar seeds 123 e 456 para `random_brightness_contrast` e `random_gamma` clean — **concluído, seção 3b**
+- [x] Atualizar `docs/relatorio-final-r21-downstream.md` com esses resultados — **seção 13 adicionada**
 - [ ] Atualizar `_v7.tex` → `\subsection{Downstream Segmentation Evaluation}`
 - [ ] Atualizar `response_to_reviewers.md` → seção R2.1

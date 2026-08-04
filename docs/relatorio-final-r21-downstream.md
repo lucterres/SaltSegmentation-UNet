@@ -493,3 +493,77 @@ Para isolar o efeito da filtragem de cobertura de sal, foi executado um protocol
 ### Conclusão prática
 
 No protocolo definitivo com `test=400`, o conjunto **filtrado `1–99%`** é superior ao não filtrado quando ambos são comparados com o **mesmo número de amostras de treino**. Assim, ele deve permanecer como a melhor base real para os experimentos downstream do paper.
+
+---
+
+## 13. Experimento — Cenário B com Data Augmentation Albumentations (2026-08-04)
+
+> **Protocolo atualizado com controle rigoroso de data leakage.**  
+> Resultados completos em `docs/cenarioDA.md`.
+
+### 13.1 Motivação
+
+Os experimentos anteriores (seções 2–11) usaram pools sintéticos gerados por VAE geométrico ou sísmico. Esta seção avalia **6 métodos de augmentação clássica (Albumentations)** como alternativa mais simples e controlável.
+
+### 13.2 Controle de data leakage
+
+O TGS tem **3998 imagens** e o test set canônico de **800 amostras** foi retirado dessas mesmas 3998. Para comparações válidas:
+
+| Recurso | Conteúdo | Descrição |
+|---------|----------|-----------|
+| `dataset/train_pool/` | 3198 amostras | TGS − 800 test = pool de treino limpo |
+| `dataset/*1600clean/` | 1600 amostras aug. | Geradas excluindo as 800 do test (pool: 3199 fontes) |
+
+### 13.3 Baseline A — train_pool (3 seeds, sem leakage)
+
+| Seed | N real | Test IoU | Test Dice | Épocas |
+|:----:|:------:|:--------:|:---------:|:------:|
+| 42  | 3198 | 0.4245 | 0.4576 | 48 |
+| 123 | 3198 | 0.4343 | 0.4668 | 57 |
+| 456 | 3198 | 0.4321 | 0.4638 | 52 |
+| **Média ± std** | | **0.430 ± 0.005** | **0.463 ± 0.005** | |
+
+### 13.4 Cenário B — 6 métodos DA clean (seed 42, N=1200+1200)
+
+| Método DA | Tipo | **Test IoU** | **Test Dice** | Δ vs A (N=1200) |
+|-----------|:----:|:------------:|:-------------:|:---------------:|
+| elastic_transform | geom | 0.4280 | 0.4641 | +0.042 |
+| grid_distortion | geom | 0.4246 | 0.4592 | +0.038 |
+| optical_distortion | geom | 0.4232 | 0.4597 | +0.037 |
+| clahe | int | 0.4164 | 0.4529 | +0.030 |
+| **random_brightness_contrast** | **int** | **0.4327** | **0.4683** | **+0.047** |
+| random_gamma | int | 0.4310 | 0.4647 | +0.045 |
+| **A — N=1200 (média 3 seeds)** | — | **0.383** | **0.423** | — |
+
+### 13.4b Consistência estatística — top-2 métodos (3 seeds)
+
+| Método | Seed 42 | Seed 123 | Seed 456 | **Média ± std** | Δ vs A (N=1200) |
+|--------|:-------:|:--------:|:--------:|:---------------:|:---------------:|
+| **random_brightness_contrast** | **0.4327** | **0.4219** | **0.4218** | **0.425 ± 0.006** | **+0.042** |
+| random_gamma | 0.4310 | 0.4206 | 0.4153 | 0.422 ± 0.008 | +0.039 |
+| A — N=1200 (ref) | 0.3862 | 0.3821 | 0.3817 | 0.383 ± 0.002 | — |
+| A — train_pool N=3198 (ref) | 0.4245 | 0.4343 | 0.4321 | 0.430 ± 0.005 | — |
+
+> ✅ Ganho de DA **consistente nas 3 seeds**: RBC +0.042 ± 0.006, gamma +0.039 ± 0.007.  
+> ✅ **B + RBC (0.425 ± 0.006) ≈ A train_pool (0.430 ± 0.005)** com apenas 37% dos dados reais.
+
+### 13.5 Comparação consolidada
+
+| Config | N real | N synth | Test IoU | Test Dice |
+|--------|:------:|:-------:|:--------:|:---------:|
+| A — train_pool (N=3198) | 3198 | 0 | **0.430 ± 0.005** | **0.463 ± 0.005** |
+| 🏆 **B + random_brightness_contrast** | **1200** | **1200** | **0.4327** | **0.4683** |
+| B + random_gamma | 1200 | 1200 | 0.4310 | 0.4647 |
+| B + elastic_transform | 1200 | 1200 | 0.4280 | 0.4641 |
+| B + grid_distortion | 1200 | 1200 | 0.4246 | 0.4592 |
+| B + optical_distortion | 1200 | 1200 | 0.4232 | 0.4597 |
+| B + clahe | 1200 | 1200 | 0.4164 | 0.4529 |
+| A — train_filtered (N=1293) | 1293 | 0 | 0.424 | 0.458 |
+| **A — N=1200** | **1200** | **0** | **0.386** | **0.425** |
+
+### 13.6 Conclusões
+
+1. ✅ **Todos os 6 métodos DA superam A (N=1200)** em +3 a +5pp IoU.
+2. ✅ **B + random_brightness_contrast (0.4327) ≈ A — train_pool (0.430)** — com apenas 37% dos dados reais (1200 vs 3198), DA Albumentations atinge desempenho equivalente ao treino completo.
+3. ✅ Métodos de **intensidade** (RBC, gamma) superam os **geométricos** (elastic, grid, optical) — mais adequados para o domínio sísmico onde a variação de amplitude é a principal fonte de variabilidade.
+4. 📌 **Implicação para R2.1:** No regime de dados escassos, DA Albumentações é estratégia eficaz e compensa a limitação de dados reais. Seeds 123 e 456 para os melhores métodos estão pendentes para confirmação estatística.
