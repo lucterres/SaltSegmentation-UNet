@@ -1,9 +1,23 @@
 ﻿**Manuscrito:** Access-2026-27912  
 **Experimento:** R2.1 — Downstream Segmentation  
 
-## Visão geral do processo de treinamento
+---
 
-### Como a rede aprende
+## Sumário
+
+1. [Como a rede aprende](#1-como-a-rede-aprende)
+2. [Critério de parada e checkpoint](#2-critério-de-parada-e-checkpoint)
+3. [Da validação ao teste](#3-da-validação-ao-teste)
+4. [Efeito do volume de dados](#4-efeito-do-volume-de-dados)
+5. [Ponto de Saturação do Modelo](#5-ponto-de-saturação-do-modelo)
+6. [Resultado — N=2000 · GPU V100](#6-resultado--n2000--gpu-v100)
+7. [Interpretação do Test IoU = 0.4067](#7-interpretação-do-test-iou--04067)
+8. [Análise de Proporção Real/Sintético — Cenário B](#8-análise-de-proporção-realsintético--cenário-b)
+9. [Data Leakage](#9-data-leakage)
+
+---
+
+## 1. Como a rede aprende
 
 A U-Net é treinada por **gradiente descendente** (otimizador Adam): a cada epoch, ela processa todos os batches do conjunto de treino, compara sua predição com a máscara ground truth por meio da função de perda (BCE + Dice), calcula os gradientes e atualiza os pesos. Esse ciclo se repete epoch após epoch.
 
@@ -13,7 +27,9 @@ O comportamento típico ao longo do treinamento é:
 - **Loss de validação** decresce inicialmente, mas pode oscilar ou subir quando a rede começa a superajustar (*overfitting*) ao conjunto de treino
 - **IoU e Dice de validação** sobem gradualmente, atingem um pico e podem estabilizar ou cair levemente após esse ponto
 
-### Critério de parada e checkpoint
+---
+
+## 2. Critério de parada e checkpoint
 
 O treinamento usa **early stopping**: se o `val_iou` não melhorar por `EARLY_STOP_PATIENCE=10` epochs consecutivas, o treino é interrompido antes de atingir o número máximo de epochs. A cada nova melhoria de `val_iou`, o estado atual dos pesos é salvo como `best_model.pth` — este é o checkpoint que será usado na avaliação final.
 
@@ -24,7 +40,9 @@ Epoch N+1 → val_iou piora    → descarta, mantém checkpoint anterior
 Epoch N+10 → 10 epochs sem melhoria → [Early stop]
 ```
 
-### Da validação ao teste
+---
+
+## 3. Da validação ao teste
 
 Ao final do treino, o `best_model.pth` (selecionado pelo maior `val_iou`) é carregado e avaliado no **test set fixo** (800 imagens reservadas antes de qualquer treinamento e nunca vistas durante o treino ou validação). Essa separação garante que o `test_iou` e `test_dice` reportados sejam estimativas não-enviesadas da capacidade de generalização do modelo.
 
@@ -33,18 +51,64 @@ Ao final do treino, o `best_model.pth` (selecionado pelo maior `val_iou`) é car
 - `best_val_iou` ≥ `test_iou` — o checkpoint foi selecionado *com base* na validação, introduzindo um leve viés de seleção
 - A diferença entre os dois diminui à medida que o tamanho do conjunto de treino aumenta, pois o modelo generaliza melhor
 
-### Efeito do volume de dados
+---
+
+## 4. Efeito do volume de dados
 
 Com poucos dados de treino (N pequeno), a rede tem capacidade limitada de aprender a distribuição real das imagens sísmicas: converge mais rápido, mas com `val_iou` mais baixo e maior variância entre epochs. Com mais dados, o aprendizado é mais estável, a curva de validação oscila menos e o modelo generaliza melhor para o test set.
 
+---
 
+## 5. Ponto de Saturação do Modelo
 
-Vou buscar o log do run N=2000:
+Em treinamento de redes neurais, o **model saturation point** em relação ao número de amostras é o ponto em que adicionar mais dados passa a trazer ganho muito pequeno de desempenho. Isso indica que o modelo já aprendeu a maior parte do padrão disponível para a sua capacidade atual e que a curva de aprendizado começa a "achatar".
 
-Sent `grep -E "^\[INFO\]|^  E |^\[Early|\[RESULT\]" /var/tmp/cym7/train_A_s42_n2000...` to terminal
+### Intuição prática
 
+Com poucas amostras, cada novo lote de dados melhora bastante a generalização. Conforme o conjunto cresce, o erro de validação tende a cair mais devagar até chegar numa região de **retornos decrescentes** — esse comportamento é a ideia central de saturação.
 
-## Resultado — N=2000 · GPU V100
+### O que isso significa
+
+- O modelo deixa de ser **data-limited** e passa a ser mais limitado por arquitetura, regularização, qualidade dos dados ou ruído.
+- Mais amostras ainda podem ajudar, mas o ganho marginal pode ser tão pequeno que não compensa o custo de coletar e rotular novos dados.
+- Se o desempenho continua ruim mesmo com muitos dados, o gargalo provavelmente não é mais quantidade, e sim capacidade do modelo, features, ou pré-processamento.
+
+### Como identificar
+
+O jeito mais comum é olhar uma **curva de aprendizado**:
+
+1. Treine com frações crescentes do dataset.
+2. Meça o desempenho em validação.
+3. Observe onde a curva começa a estabilizar.
+
+Se a métrica melhora muito de 1 mil para 10 mil amostras, mas quase não muda de 10 mil para 100 mil, você provavelmente já passou do ponto de saturação para aquela arquitetura e tarefa.
+
+### Relação com overfitting
+
+Saturação de dados **não é a mesma coisa que overfitting**, mas os dois se conectam. Com poucos dados, o modelo pode memorizar exemplos; com mais dados, a generalização melhora até estabilizar, e a partir daí novas amostras podem ter efeito mínimo se o modelo já estiver perto do seu limite.
+
+### Exemplo rápido
+
+| Amostras | Comportamento típico |
+|:--------:|----------------------|
+| 1.000    | Validação muito instável |
+| 10.000   | Grande melhora |
+| 100.000  | Pequena melhora adicional ← ponto de saturação |
+
+### Evidência neste experimento (curva de escala, seed=42)
+
+```
+N:     200    400    800   1600   2000   ~3200
+IoU:  0.310  0.339  0.363  0.401  0.407  0.431
+
+Ganho:   —   +0.029 +0.024 +0.038 +0.006  +0.024
+```
+
+O salto **N=1600→2000** entregou apenas **+0.6%** de IoU — sinal claro de retorno decrescente. A U-Net neste tamanho começa a saturar na faixa **N≈1600–2000**, o que motiva o uso de dados sintéticos (Cenário B) para superar esse teto sem aumentar o custo de anotação.
+
+---
+
+## 6. Resultado — N=2000 · GPU V100
 
 | Métrica | Valor |
 |---|---|
@@ -63,11 +127,9 @@ IoU:  0.310  0.339  0.363  0.401  0.407  0.431
 
 O run N=2000 confirma retorno decrescente — o ganho de N=1600→2000 foi apenas +1.4%, enquanto o salto N=2000→3200 entregou +6%. O dataset completo (~3200) ainda vale a pena usar.
 
+---
 
-
-
-
-## Interpretação do Test IoU = 0.4067
+## 7. Interpretação do Test IoU = 0.4067
 
 ### O que é IoU (Intersection over Union)?
 
