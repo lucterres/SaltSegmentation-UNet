@@ -1,15 +1,15 @@
 # QUICKSTART — Experimento Downstream R2.1
 
-**Manuscrito:** Access-2026-27912 | **Data:** 2026-07-23
+**Manuscrito:** Access-2026-27912 | **Última atualização:** 2026-08-06
 
 ---
 
-## 0. Mapear Home Area 
+## 0. Mapear Home Area
 
-    \\homeunix-rio.petrobras.biz\cym7 -> E:
-    no VSCode abrir pasta do codigo fonte - I:\0code\SaltSegment-Unet
-
-Definir a variável base do projeto no shell:
+```
+\\homeunix-rio.petrobras.biz\cym7 -> E:
+VSCode: abrir pasta I:\0code\SaltSegment-Unet
+```
 
 ```bash
 export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
@@ -17,276 +17,184 @@ export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
 
 ---
 
-## 1. Conectar ao nó GPU alocado
+## 1. Conectar ao nó GPU
 
-### 1.0 Verifique se tem job rodando
- a coluna NODELIST mostrará o nó alocado
-
+### 1.1 Verificar job ativo
 ```bash
-squeue -u cym7
-```
-
-### 1.1 ssh no nó de login
 ssh atena03.petrobras.biz
-
-### 1.2 solicitar no com gpu: 
-```bash
-salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00
+squeue -u cym7   # coluna NODELIST mostra o nó
 ```
 
-### 1.3 conectar 
+### 1.2 Solicitar nó exclusivo (recomendado)
 ```bash
-# Abrir terminal SSH persistente (substituir pelo nó alocado no dia)
-# Para descobrir o nó após reconexão: ssh atena03 → squeue -u cym7 → ver NODELIST
-ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 atn2b03n03
-# ex: atn2b03n01, atn2b04n02, etc.
+salloc --nodes=1 -p gpu --account=pn-dscien --time=08:00:00 --gres=gpu:8 --exclusive
 ```
+
+### 1.3 Conectar ao nó
+```bash
+ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=10 <nó-alocado>
+# ex: atn2b03n03, atn2b01n05, etc.
+```
+
+> **Nota:** sem `--exclusive` o nó pode ser compartilhado com outros usuários — GPUs podem estar parcialmente ocupadas.
 
 ---
 
-## 2. Verificar / preparar o ambiente
+## 2. Verificar / preparar ambiente
 
+```bash
 export PROJ=/nethome/atena_projetos/cym7/0code/SaltSegment-Unet
-```bash
-bash $PROJ/check_node_Atena.sh
+bash $PROJ/scripts/infra/check_node_Atena.sh   # só verifica
+bash $PROJ/scripts/infra/setup_node_Atena.sh   # restaura venv + dataset se ausentes
 ```
 
-O script verifica (sem modificar nada):
-- ✅ Dataset local (`/var/tmp/cym7/datasets/tgs-salt/train/images/` — esperado: 3998 imagens)
-- ✅ Venv (`/var/tmp/cym7/venvs/salt-unet/`) — Python, PyTorch e CUDA
-- ✅ GPUs disponíveis via `nvidia-smi`
-
-**Se algum item aparecer como AUSENTE**, execute o setup completo:
-
-```bash
-bash $PROJ/setup_node_Atena.sh
-```
-
-O `setup_node_Atena.sh` restaura automaticamente:
-1. Dataset — extrai de `/nethome/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar` → `/var/tmp/cym7/datasets/`
-2. Venv — extrai de `/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar` → `/var/tmp/cym7/venvs/` e corrige `pyvenv.cfg`
-
-Importações Python (import torch, import numpy, etc.) carregam dezenas de .so do venv → no NFS isso pode levar 10–30s extras por processo
 ---
 
-## 3. Ativar o ambiente e ir para o projeto
+## 3. Ativar ambiente
 
 ```bash
 source /var/tmp/cym7/venvs/salt-unet/bin/activate
 cd $PROJ/Salt-Segmentation-UNet
-
-# Confirmar GPU
 python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_available(), '| GPUs:', torch.cuda.device_count())"
 # Esperado: 2.4.1+cu124 | CUDA: True | GPUs: 8
 ```
 
 ---
 
-## 4. Comandos de treinamento
+## 4. Protocolo canônico — Cenário A vs B (sem data leakage)
 
-> Sempre definir `PROJ` antes de rodar. Os diretórios de resultado são criados automaticamente pelo `train.py`.
+> **Regra obrigatória:** sempre usar `--test_dir` com o test set canônico.  
+> Nunca usar split interno — causa leakage quando `--train_dir` aponta para o TGS completo.
 
-> `PROJ` já foi exportada na seção inicial.
+| Parâmetro canônico | Valor |
+|-------------------|-------|
+| `--train_dir` | `/var/tmp/cym7/datasets/tgs-salt/train` (3998 amostras) |
+| `--test_dir` | `/var/tmp/cym7/datasets/subset_split/test` (800 amostras fixas) |
+| `--n_synth` | 1200 |
+| `--epochs` | 100 |
 
-### Argumentos do `train.py`
+### 4.1 Lançar experimento completo (A + B × 6 datasets × 3 seeds)
+
+#### N_real = 3998 (dataset completo)
+```bash
+nohup bash $PROJ/scripts/batch/run_batch_B_seeds123_456.sh \
+  > $PROJ/results/slurm_logs/launchers/batch_nreal3998.log 2>&1 &
+```
+
+#### N_real = 1200 (low-data regime)
+```bash
+nohup bash $PROJ/scripts/batch/run_batch_nreal1200.sh \
+  > $PROJ/results/slurm_logs/launchers/batch_nreal1200.log 2>&1 &
+```
+
+> Os launchers usam **lockfile por GPU** — sem duplicatas, cascata automática quando GPU libera.
+
+### 4.2 Monitorar progresso
+```bash
+# GPUs em tempo real
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used --format=csv
+
+# Logs do launcher
+tail -f $PROJ/results/slurm_logs/launchers/batch_nreal1200.log
+
+# Progresso de todas as runs
+bash $PROJ/scripts/monitoring/check_progress_6albu_seed42.sh
+
+# Cancelar tudo
+bash $PROJ/scripts/monitoring/kill_cenarioB_6albu_seed42.sh
+```
+
+---
+
+## 5. Argumentos do `train.py`
 
 | Argumento | Tipo | Default | Descrição |
 |-----------|------|---------|-----------|
 | `--scenario` | A/B | obrigatório | A = real only; B = real + sintéticos |
-| `--seed` | int | 42 | Semente para reprodutibilidade |
+| `--seed` | int | 42 | Semente de reprodutibilidade |
 | `--n_real` | int | None | Limitar amostras reais (low-data regime) |
 | `--n_synth` | int | 400 | Número de sintéticos no Cenário B |
-| `--epochs` | int | 50 | Máximo de épocas (early stop por val IoU) |
+| `--epochs` | int | 100 | Máximo de épocas |
 | `--batch` | int | 16 | Batch size |
 | `--lr` | float | 1e-4 | Learning rate |
-| `--train_dir` | path | None | **Novo** — pasta `images/`+`masks/` para treino externo (sobrescreve `TGS_PATH`) |
-| `--test_dir` | path | None | **Novo** — pasta `images/`+`masks/` para test set fixo externo (pula split interno) |
+| `--train_dir` | path | None | Pasta `images/`+`masks/` de treino (sobrescreve `TGS_PATH`) |
+| `--test_dir` | path | None | **Obrigatório** — pasta test set canônico externo |
+| `--synth_dir` | path | None | Pasta sintéticos (sobrescreve symlink `dataset/synthetic`) |
 
-> **Nota:** quando `--train_dir` é fornecido, o `run_tag` recebe o sufixo do nome da pasta (ex: `scenario_A_seed42_train_filtered`).  
-> Quando `TGS_PATH` é definido via variável de ambiente (ex: `env TGS_PATH=.../subset_1_99`), o sufixo é extraído automaticamente do nome do diretório (ex: `scenario_A_seed42_subset_1_99`).  
-> Quando `--test_dir` é fornecido, o split interno 80/20 é ignorado — o test set externo é usado diretamente.
-
----
-
-### Cenário A — Real only (seeds 42, 123, 456 — dataset completo ~3200)
-
-```bash
-mkdir -p $PROJ/results/scenario_A_seed{42,123,456}
-
-nohup python -u train.py --scenario A --seed 42  --epochs 100 > $PROJ/results/scenario_A_seed42/train.log  2>&1 &
-nohup python -u train.py --scenario A --seed 123 --epochs 100 > $PROJ/results/scenario_A_seed123/train.log 2>&1 &
-nohup python -u train.py --scenario A --seed 456 --epochs 100 > $PROJ/results/scenario_A_seed456/train.log 2>&1 &
-```
-
-### Cenário A — Low-data regime (seed 42, N amostras)
-
-```bash
-# Substituir <N> por: 200, 400, 800, 1200, 2000
-N=800
-mkdir -p $PROJ/results/scenario_A_seed42_nreal${N}
-nohup python -u train.py --scenario A --seed 42 --n_real $N --epochs 100 \
-  > $PROJ/results/scenario_A_seed42_nreal${N}/train.log 2>&1 & echo "PID: $!"
-```
-
-### Cenário B — Real + Synthetic (seeds 42, 123, 456 — dataset completo)
-
-```bash
-# Verificar/ajustar symlink para o pool sintético desejado:
-# 400 sintéticos originais:
-ln -sfn /var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400 dataset/synthetic
-# 955 sintéticos sísmicos (melhor resultado):
-ln -sfn $PROJ/Salt-Segmentation-UNet/dataset/geometric1600_seismic/pairs1600_seismic dataset/synthetic
-
-ls dataset/synthetic/  # deve mostrar: images  masks
-
-mkdir -p $PROJ/results/scenario_B_seed{42,123,456}
-
-nohup python -u train.py --scenario B --seed 42  --n_synth 955 --epochs 100 > $PROJ/results/scenario_B_seed42/train.log  2>&1 &
-nohup python -u train.py --scenario B --seed 123 --n_synth 955 --epochs 100 > $PROJ/results/scenario_B_seed123/train.log 2>&1 &
-nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 > $PROJ/results/scenario_B_seed456/train.log 2>&1 &
-```
-
-### Cenário A/B — com dataset externo `subset_split` (protocolo canônico — melhor resultado)
-
-```bash
-# Pré-requisito: extrair subset_split no SSD local
-tar -xf $PROJ/Salt-Segmentation-UNet/dataset/subset_split.tar \
-    -C /var/tmp/cym7/datasets/
-
-SPLIT=/var/tmp/cym7/datasets/subset_split
-
-# Cenário A — 3 seeds
-mkdir -p $PROJ/results/scenario_A_seed{42,123,456}_train_filtered
-nohup python -u train.py --scenario A --seed 42  --epochs 100 \
-  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
-  > $PROJ/results/scenario_A_seed42_train_filtered/train.log  2>&1 &
-nohup python -u train.py --scenario A --seed 123 --epochs 100 \
-  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
-  > $PROJ/results/scenario_A_seed123_train_filtered/train.log 2>&1 &
-nohup python -u train.py --scenario A --seed 456 --epochs 100 \
-  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
-  > $PROJ/results/scenario_A_seed456_train_filtered/train.log 2>&1 &
-
-# Cenário B — 3 seeds (+ 955 sintéticos sísmicos)
-mkdir -p $PROJ/results/scenario_B_seed{42,123,456}_train_filtered
-nohup python -u train.py --scenario B --seed 42  --n_synth 955 --epochs 100 \
-  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
-  > $PROJ/results/scenario_B_seed42_train_filtered/train.log  2>&1 &
-nohup python -u train.py --scenario B --seed 123 --n_synth 955 --epochs 100 \
-  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
-  > $PROJ/results/scenario_B_seed123_train_filtered/train.log 2>&1 &
-nohup python -u train.py --scenario B --seed 456 --n_synth 955 --epochs 100 \
-  --train_dir $SPLIT/train_filtered --test_dir $SPLIT/test \
-  > $PROJ/results/scenario_B_seed456_train_filtered/train.log 2>&1 &
-```
-
-### Cenário A/B — com `subset_10_90` (train e test filtrados 10–90%)
-
-```bash
-# Pré-requisito: extrair subset_10_90 no SSD local
-tar -xf $PROJ/Salt-Segmentation-UNet/dataset/subset_10_90.tar \
-    -C /var/tmp/cym7/datasets/
-
-mkdir -p $PROJ/results/scenario_{A,B}_seed42_subset1090
-
-nohup env TGS_PATH=/var/tmp/cym7/datasets/subset_10_90 \
-  python -u train.py --scenario A --seed 42 --epochs 100 \
-  > $PROJ/results/scenario_A_seed42_subset1090/train.log 2>&1 &
-
-nohup env TGS_PATH=/var/tmp/cym7/datasets/subset_10_90 \
-  python -u train.py --scenario B --seed 42 --n_synth 955 --epochs 100 \
-  > $PROJ/results/scenario_B_seed42_subset1090/train.log 2>&1 &
-```
-
-### Cenário B — Low-data regime (800 reais + sintéticos)
-
-```bash
-mkdir -p $PROJ/results/scenario_B_seed{42,123,456}_nreal800
-
-nohup python -u train.py --scenario B --seed 42  --n_real 800 --n_synth 400 --epochs 100 > $PROJ/results/scenario_B_seed42_nreal800/train.log  2>&1 &
-nohup python -u train.py --scenario B --seed 123 --n_real 800 --n_synth 400 --epochs 100 > $PROJ/results/scenario_B_seed123_nreal800/train.log 2>&1 &
-nohup python -u train.py --scenario B --seed 456 --n_real 800 --n_synth 400 --epochs 100 > $PROJ/results/scenario_B_seed456_nreal800/train.log 2>&1 &
-```
+**Run tag gerado:** `scenario_<A|B>_seed<S>[_nreal<N>]_<train_dir_name>[_<synth_name>_ns<N_synth>]`
 
 ---
 
-## 5. Monitorar treinamentos
+## 6. Datasets sintéticos disponíveis (albumentations clean)
 
-```bash
-# Acompanhar um run em tempo real
-tail -f $PROJ/results/scenario_A_seed42/train.log
+Localizados em `$PROJ/Salt-Segmentation-UNet/dataset/` — **clean** = sem IDs do test canônico.
 
-# Ver últimas linhas de todos os runs ativos
-watch -n 15 'tail -n 2 '$PROJ'/results/*/train.log'
+| Dataset | Tipo | Amostras |
+|---------|------|:--------:|
+| `clahe1600clean` | Intensidade | 1600 |
+| `elastic_transform1600clean` | Geométrico | 1600 |
+| `grid_distortion1600clean` | Geométrico | 1600 |
+| `optical_distortion1600clean` | Geométrico | 1600 |
+| `random_brightness_contrast1600clean` | Intensidade | 1600 |
+| `random_gamma1600clean` | Intensidade | 1600 |
 
-# Processos ativos
-ps aux | grep train.py | grep -v grep
+---
 
-# Uso de GPU
-nvidia-smi --query-gpu=index,name,memory.used,memory.free,utilization.gpu --format=csv,noheader
+## 7. Resultados de referência (test canônico 800, sem leakage)
+
+### N_real = 3998
+
+| Cenário | Dataset sintético | IoU médio (3 seeds) | Δ vs A |
+|---------|------------------|:-------------------:|:------:|
+| **A** | — | **0.4734** | — |
+| **B** ✅ | `random_gamma` | **0.4870** | **+0.014** |
+| **B** | `grid_distortion` | 0.4774 | +0.004 |
+
+### N_real = 1200
+
+| Cenário | Dataset sintético | IoU médio (3 seeds) | Δ vs A |
+|---------|------------------|:-------------------:|:------:|
+| **A** | — | **0.4081** | — |
+| **B** ✅ | `elastic_transform` | **0.4276** | **+0.020** |
+| **B** | `grid_distortion` | 0.4272 | +0.019 |
+
+> **Todos os 6 datasets superam A com N=1200**. Com N=3998 apenas 2 superam.
+
+---
+
+## 8. Estrutura de resultados
+
+```
+results/
+├── scenario_A_seed42_train/          ← result.csv, history.csv, best_model.pth, plot.png
+├── scenario_B_seed42_train_<DS>_ns1200/
+├── ...
+└── slurm_logs/
+    ├── launchers/   ← logs dos batch launchers
+    ├── nreal3998/   ← logs individuais N=3998
+    └── nreal1200/   ← logs individuais N=1200
 ```
 
+**`result.csv`:** `scenario, seed, n_real, n_synth, best_val_iou, test_iou, test_dice, epochs_run, elapsed_s`
+
 ---
 
-## 6. Avaliação final
+## 9. Scripts organizados
 
-```bash
-cd $PROJ/Salt-Segmentation-UNet
-python -u evaluate.py --results_dir ../results
-# Saída: ../results/summary.csv
+```
+scripts/
+├── infra/       check_node_Atena.sh | setup_node_Atena.sh
+├── batch/       run_batch_nreal1200.sh ✅ | run_batch_B_seeds123_456.sh ✅
+└── monitoring/  check_progress_6albu_seed42.sh | kill_cenarioB_6albu_seed42.sh
 ```
 
----
-
-## 7. Resultados obtidos até 2026-07-23
-
-### Cenário A — Escala de dados (seed 42, GPU V100)
-
-| N real | Test IoU | Test Dice | Épocas | Tempo |
-|:------:|:--------:|:---------:|:------:|:-----:|
-| 200 | 0.2587 | 0.3178 | 10 | 4.5s |
-| 400 | 0.3198 | 0.3623 | 10 | 6.6s |
-| 800 | 0.3771 | 0.4168 | 75 | 79s |
-| 1200 | 0.3862 | 0.4252 | 72 | 104s |
-| 2000 | 0.4067 | 0.4423 | 46 | 110s |
-| ~3200 | **0.4312** | **0.4657** | 57 | 202s |
-
-### Cenário A vs B — N=800, 3 seeds (GPU V100)
-
-| Cenário | N real | N synth | Seed | Test IoU | Test Dice |
-|:-------:|:------:|:-------:|:----:|:--------:|:---------:|
-| A | 800 | 0 | 42 | 0.3771 | 0.4168 |
-| A | 800 | 0 | 123 | 0.3874 | 0.4249 |
-| A | 800 | 0 | 456 | 0.3812 | 0.4219 |
-| **A média** | | | | **0.382** | **0.421** |
-| B | 800 | 400 | 42 | 0.3650 | 0.4057 |
-| B | 800 | 400 | 123 | 0.3646 | 0.4037 |
-| B | 800 | 400 | 456 | 0.3789 | 0.4191 |
-| **B média** | | | | **0.369** | **0.410** |
-
-### Cenário A — Dataset completo (~3200), 3 seeds (GPU V100)
-
-| Seed | Test IoU | Test Dice | Épocas |
-|:----:|:--------:|:---------:|:------:|
-| 42 | 0.4312 | 0.4657 | 57 |
-| 123 | 0.4190 | 0.4544 | 52 |
-| 456 | 0.4240 | 0.4593 | 54 |
-| **média** | **0.425 ± 0.006** | **0.460 ± 0.006** | |
-
-> **Pendente:** Cenário B com dataset completo (~3200 + 400) — comparação principal do paper.
+Ver `scripts/README.md` para detalhes.
 
 ---
 
-## 8. Paths de referência
+## 10. Relatórios
 
-| Recurso | Path |
-|---------|------|
-| Código | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/Salt-Segmentation-UNet/` |
-| Resultados | `/nethome/atena_projetos/cym7/0code/SaltSegment-Unet/results/` |
-| venv (SSD local) | `/var/tmp/cym7/venvs/salt-unet/` |
-| venv (backup home) | `/u/cym7/venvs_backup/salt-unet/` |
-| Dataset TGS (SSD local) | `/var/tmp/cym7/datasets/tgs-salt/train/` |
-| Dataset TGS (tar backup) | `/nethome/atena_projetos/cym7/dataset/tgsSalt/tgs-salt.tar` |
-| venv (tar backup) | `/nethome/atena_projetos/cym7/envs/salt-unet-venv.tar` |
-| Dados sintéticos | `/var/tmp/cym7/datasets/tgs-salt/tgs-salt/synthetic400/` |
-| Symlink sintéticos | `dataset/synthetic/` → path acima |
+| Arquivo | Conteúdo |
+|---------|----------|
+| `docs/relatorio-cenarioB-albumentations-3seeds.md` | Resultados completos N=3998 e N=1200, 3 seeds, 6 datasets |
+| `docs/relatorio-final-r21-downstream.md` | Relatório geral R2.1 |
