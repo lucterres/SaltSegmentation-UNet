@@ -324,3 +324,77 @@
 4. **Efeito da escassez confirma hipótese do manuscrito:** quanto menos dados reais, maior o benefício dos sintéticos — de +1.36 pp (N=3998) para +1.95 pp (N=1200).
 
 5. **`random_gamma`**, que era o melhor com N=3998, cai para o 4º lugar com N=1200 — sugerindo que esse método é mais eficaz quando há dados reais suficientes para explorar a variação de intensidade aprendida.
+
+---
+
+# Experimento 3 — Pool Sísmico `pairs1600_seismic` | N_real=1200 | N_synth=1200 | 3 seeds
+
+**Data:** 2026-08-06  
+**Pool sintético:** `dataset/pairs1600_seismic/` — 1600 pares gerados por síntese sísmica (geométrica + textura sísmica)  
+**Motivação:** comparar o pool sísmico (usado nas Fases I–III) com os melhores métodos Albumentations no regime N=1200.
+
+---
+
+## 25. Configuração
+
+| Parâmetro | Valor |
+|-----------|-------|
+| Train dir | `/var/tmp/cym7/datasets/tgs-salt/train` |
+| Test dir | `/var/tmp/cym7/datasets/subset_split/test` (800 canônico) |
+| N_real | **1200** |
+| N_synth | **1200** (de pool com 1600 disponíveis) |
+| Synth dir | `dataset/pairs1600_seismic/` |
+| Seeds | 42, 123, 456 |
+
+---
+
+## 26. Resultados — Cenário B `pairs1600_seismic`
+
+| Seed | Best val IoU | Test IoU | Test Dice | Épocas | Tempo (s) |
+|:----:|:------------:|:--------:|:---------:|:------:|:---------:|
+| 42   | 0.4032 | 0.4241 | 0.4623 | 41 | 112 |
+| 123  | 0.4004 | 0.4025 | 0.4411 | 24 | 66 |
+| 456  | 0.4047 | **0.4233** | **0.4596** | 46 | 125 |
+| **Média** | **0.4028** | **0.4166** | **0.4543** | 37 | 101 |
+| **Δ vs A (N=1200)** | — | **+0.0085 ✅** | **+0.0107 ✅** | — | — |
+
+---
+
+## 27. Ranking consolidado — todos os pools sintéticos, N=1200
+
+| Rank | Pool sintético | Tipo | IoU médio | Δ vs A |
+|:----:|:--------------|:----:|:---------:|:------:|
+| 🥇 1 | `elastic_transform1600clean` | Albumentations geométrico | **0.4276** | **+0.0195** |
+| 🥈 2 | `grid_distortion1600clean` | Albumentations geométrico | 0.4272 | +0.0191 |
+| 🥉 3 | `random_brightness_contrast1600clean` | Albumentations intensidade | 0.4270 | +0.0189 |
+| 4 | `random_gamma1600clean` | Albumentations intensidade | 0.4271 | +0.0190 |
+| 5 | `optical_distortion1600clean` | Albumentations geométrico | 0.4193 | +0.0112 |
+| 6 | **`pairs1600_seismic`** | Sísmico (geom. + textura) | **0.4166** | **+0.0085** |
+| 7 | `clahe1600clean` | Albumentations intensidade | 0.4147 | +0.0066 |
+| — | **Cenário A** | — | **0.4081** | — |
+
+---
+
+## 28. Análise comparativa — Albumentations vs Sísmico
+
+| Aspecto | Albumentations (melhores) | Sísmico `pairs1600_seismic` |
+|---------|:-------------------------:|:---------------------------:|
+| IoU médio (N=1200) | 0.4270–0.4276 | 0.4166 |
+| Δ vs A | +0.019–0.020 | +0.009 |
+| Posição no ranking | 1–4 | **6ª** |
+| Geração | Transformação direta do TGS | Síntese geométrica + textura sísmica |
+| Clean (sem leakage) | ✅ | ⚠️ não verificado explicitamente |
+
+---
+
+## 29. Conclusões do Experimento 3
+
+1. **`pairs1600_seismic` supera o Cenário A** com N=1200 (+0.9 pp) — confirma que sintéticos sísmicos têm valor, mas com magnitude menor que Albumentations.
+
+2. **Albumentations supera o pool sísmico** em N=1200 — os 4 melhores métodos Albumentations têm ganho 2× maior que o pool sísmico (+1.9–2.0 pp vs +0.9 pp).
+
+3. **Inversão de resultado vs Fases I–III:** nas fases anteriores (com split interno, possivelmente com leakage), o pool sísmico aparecia como melhor opção. Com o protocolo canônico sem leakage, Albumentations é superior.
+
+4. **Todos os 7 pools testados superam o baseline A (N=1200)** — confirma robustez da hipótese R2.1 independente do método de augmentation.
+
+5. **Recomendação para o manuscrito:** usar `elastic_transform` ou `grid_distortion` como método principal de augmentation para o regime N=1200, e `random_gamma` para N=3998.

@@ -157,8 +157,9 @@ Localizados em `$PROJ/Salt-Segmentation-UNet/dataset/` — **clean** = sem IDs d
 | **A** | — | **0.4081** | — |
 | **B** ✅ | `elastic_transform` | **0.4276** | **+0.020** |
 | **B** | `grid_distortion` | 0.4272 | +0.019 |
+| **B** | `pairs1600_seismic` | 0.4166 | +0.009 |
 
-> **Todos os 6 datasets superam A com N=1200**. Com N=3998 apenas 2 superam.
+> **Todos os 7 pools testados superam A com N=1200.** Com N=3998 apenas 2 superam.
 
 ---
 
