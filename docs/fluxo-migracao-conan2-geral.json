@@ -1,0 +1,380 @@
+{
+  "version": "31.4.5",
+  "pages": [
+    {
+      "id": "9F1BRK5YUZpCfSQ1MwGl",
+      "name": "Página-1",
+      "cells": [
+        {
+          "id": "1",
+          "type": "layer"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-3",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-1",
+          "target": "00KiwmX0bt_8N0d_vmL3-2"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-1",
+          "type": "node",
+          "parent": "1",
+          "label": "Receitas Conan 2\ns11524-modgeo-genesisplataforma-receitasconan2\n\n(Qt/Qt5, Boost, DevKit,OpenInventor, terralib, GDAL, HDF5, SQLite, Gds, CGAL, Qwt, Eigen3, SWSolver, Gmsh, xerces-c, xsd, gtest, ninja, cmake, etc.)",
+          "html": "<font style=\"\"><font style=\"font-size: 16px;\"><b style=\"\">Receitas Conan 2</b><br></font><font style=\"font-size: 10px;\">s11524-modgeo-genesisplataforma-receitasconan2</font></font><div><font style=\"\"><font><br></font></font><div>(Qt/Qt5, Boost, DevKit,OpenInventor, terralib, GDAL, HDF5, SQLite, Gds, CGAL, Qwt, Eigen3, SWSolver, Gmsh, xerces-c, xsd, gtest, ninja, cmake, etc.)</div></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-7",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-2",
+          "target": "00KiwmX0bt_8N0d_vmL3-4"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-2",
+          "type": "node",
+          "parent": "1",
+          "label": "Genesis Framework\ns11524-modgeo-genesisplataforma-genesisframework",
+          "html": "<div style=\"margin-right: -30px;\"><font style=\"font-size: 10px;\"><b style=\"font-size: 12px;\"><font style=\"font-size: 16px;\">Genesis Framework</font></b></font></div><div style=\"margin-right: -30px;\"><font style=\"font-size: 10px;\">s11524-modgeo-genesisplataforma-genesisframework</font></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-9",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-4",
+          "target": "00KiwmX0bt_8N0d_vmL3-8"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-4",
+          "type": "node",
+          "parent": "1",
+          "label": "Geoconnector\ns11524-modgeo-genesisplugins-geoconnector",
+          "html": "<b><font style=\"font-size: 16px;\">Geoconnector</font></b><div><font style=\"font-size: 10px;\">s11524-modgeo-genesisplugins-geoconnector</font></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-11",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-8",
+          "target": "00KiwmX0bt_8N0d_vmL3-10"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-3",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-8",
+          "target": "1_IO8B9Chp1znaOXYsA_-2"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-8",
+          "type": "node",
+          "parent": "1",
+          "label": "Genesis Extensions\ns11524-modgeo-genesisplugins-genesisextensions",
+          "html": "<b><font style=\"font-size: 16px;\">Genesis Extensions</font></b><div><font style=\"font-size: 10px;\">s11524-modgeo-genesisplugins-genesisextensions</font></div>"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-7",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-10",
+          "target": "IjdsVlynXRgyDi3un1nQ-9"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-10",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-10",
+          "target": "00KiwmX0bt_8N0d_vmL3-12"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-10",
+          "type": "node",
+          "parent": "1",
+          "label": "Geologia\ns11524-modgeo-genesisplugins-geologia",
+          "html": "<b><font style=\"font-size: 16px;\">Geologia</font></b><div><font style=\"\"><font size=\"1\">s11524-modgeo-genesisplugins-geologia</font></font></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-15",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-12",
+          "target": "00KiwmX0bt_8N0d_vmL3-14"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-12",
+          "type": "node",
+          "parent": "1",
+          "label": "BSMIOX\nsibr-bsmiox",
+          "html": "<b><font style=\"font-size: 16px;\">BSMIOX</font></b><div><font style=\"font-size: 10px;\">sibr-bsmiox</font></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-17",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-14",
+          "target": "00KiwmX0bt_8N0d_vmL3-16"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-14",
+          "type": "node",
+          "parent": "1",
+          "label": "BSMIO\nsibr-bsmio",
+          "html": "<b><font style=\"font-size: 16px;\">BSMIO</font></b><div><font style=\"\" size=\"1\">sibr-bsmio</font></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-19",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-16",
+          "target": "00KiwmX0bt_8N0d_vmL3-18"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-16",
+          "type": "node",
+          "parent": "1",
+          "label": "MeshGenerator\nsibr-meshgenerator",
+          "html": "<b><font style=\"font-size: 16px;\">MeshGenerator</font></b><div><font style=\"\"><font size=\"1\">sibr-meshgenerator</font></font></div>"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-15",
+          "type": "edge",
+          "parent": "1",
+          "source": "00KiwmX0bt_8N0d_vmL3-18",
+          "target": "00KiwmX0bt_8N0d_vmL3-25"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-20",
+          "type": "node",
+          "parent": "1",
+          "label": "Sequência de Migração para Conan 2 - Geral v.1\nEsse diagrama tem como propósito exibir o fluxo de migração dos repositórios dos projetos BrKin, AchillesBR, StratBR e SimBR para o Conan 2.",
+          "html": "<h1 style=\"margin-top: 0px; margin-bottom: 3px;\">Sequência de Migração para Conan 2 - Geral&nbsp;<sup style=\"font-weight: normal;\"><font style=\"font-size: 12px;\">v.1</font></sup></h1><div><h1 style=\"margin-top: 0px; margin-bottom: 5px;\"><span style=\"font-size: 12px; font-weight: 400;\">Esse diagrama tem como propósito exibir o fluxo de migração dos repositórios dos projetos BrKin, AchillesBR, StratBR e SimBR para o Conan 2.</span></h1></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-25",
+          "type": "node",
+          "parent": "1",
+          "label": "Standalone\ns11436-modgeo-genesis-standalone",
+          "html": "<b><font style=\"font-size: 16px;\">Standalone</font></b><div><span style=\"text-align: left;\"><font style=\"font-size: 10px;\">s11436-modgeo-genesis-standalone</font></span></div>"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-34",
+          "type": "node",
+          "parent": "1",
+          "label": "Legenda"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-35",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-34"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-36",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-35",
+          "label": "Repositórios base para Conan 2"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-37",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-34"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-38",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-37",
+          "label": "Repositórios já migrados"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-39",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-34"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-40",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-39",
+          "label": "Próximo repositório para migração"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-41",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-34"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-42",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-41",
+          "label": "Repositórios não migrados"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-43",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-34"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-44",
+          "type": "node",
+          "parent": "00KiwmX0bt_8N0d_vmL3-43",
+          "label": "Repositório para instalador compartilhado"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-17",
+          "type": "edge",
+          "parent": "1",
+          "source": "1_IO8B9Chp1znaOXYsA_-2",
+          "target": "00KiwmX0bt_8N0d_vmL3-25"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-2",
+          "type": "node",
+          "parent": "1",
+          "label": "BrKin\ns11899-modgeo-genesisplugins-geoquimica",
+          "html": "<div style=\"margin-right: -30px;\"><b><font style=\"font-size: 16px;\">BrKin</font></b><font size=\"1\"></font></div><div style=\"margin-right: -30px;\"><font size=\"1\">s11899-modgeo-genesisplugins-geoquimica</font></div>"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-9",
+          "type": "edge",
+          "parent": "1",
+          "source": "1_IO8B9Chp1znaOXYsA_-6",
+          "target": "1_IO8B9Chp1znaOXYsA_-8"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-6",
+          "type": "node",
+          "parent": "1",
+          "label": "StratModeling\ns11436-modgeo-genesisplugins-modelagemestratigrafica",
+          "html": "<b><font style=\"font-size: 16px;\">StratModeling</font></b><div><font style=\"font-size: 10px;\">s11436-modgeo-genesisplugins-modelagemestratigrafica</font></div>"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-3",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-5",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-6",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "00KiwmX0bt_8N0d_vmL3-18",
+          "type": "node",
+          "parent": "IjdsVlynXRgyDi3un1nQ-6",
+          "label": "SimBR\nsibr-simbr",
+          "html": "<div style=\"margin-right: -40px;\"><font style=\"\"><b><font style=\"font-size: 16px;\">SimBR</font></b><font size=\"1\"></font></font></div><div style=\"margin-right: -40px;\"><font style=\"\"><font size=\"1\">sibr-simbr</font></font></div>"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-1",
+          "type": "node",
+          "parent": "IjdsVlynXRgyDi3un1nQ-6"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-7",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "1_IO8B9Chp1znaOXYsA_-8",
+          "type": "node",
+          "parent": "IjdsVlynXRgyDi3un1nQ-7",
+          "label": "AchillesBR\ns11899-modgeo-genesisplugins-organicfacies",
+          "html": "<div style=\"margin-right: -40px;\"><b style=\"font-size: 16px;\">AchillesBR</b><span style=\"font-size: 10px; background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\"></span></div><div style=\"margin-right: -40px;\"><span style=\"font-size: 10px; background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">s11899-modgeo-genesisplugins-organicfacies</span></div>"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-2",
+          "type": "node",
+          "parent": "IjdsVlynXRgyDi3un1nQ-7"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-10",
+          "type": "edge",
+          "parent": "1",
+          "source": "IjdsVlynXRgyDi3un1nQ-9",
+          "target": "1_IO8B9Chp1znaOXYsA_-6"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-9",
+          "type": "node",
+          "parent": "1",
+          "label": "Geoestatística\ns11436-modgeo-genesisplugins-geoestatistica",
+          "html": "<b><font style=\"font-size: 16px;\">Geoestatística</font></b><div><font style=\"font-size: 10px;\">s11436-modgeo-genesisplugins-geoestatistica</font></div>"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-14",
+          "type": "edge",
+          "parent": "1",
+          "source": "IjdsVlynXRgyDi3un1nQ-11",
+          "target": "IjdsVlynXRgyDi3un1nQ-13"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-11",
+          "type": "node",
+          "parent": "1",
+          "label": "Fractal Analysis\ns11436-modgeo-genesisplugins-fractalanalysis",
+          "html": "<div><font style=\"font-size: 16px;\"><b>Fractal Analysis</b></font></div><div><font style=\"font-size: 10px;\">s11436-modgeo-genesisplugins-fractalanalysis</font></div>"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-12",
+          "type": "edge",
+          "parent": "1",
+          "source": "1_IO8B9Chp1znaOXYsA_-8",
+          "target": "IjdsVlynXRgyDi3un1nQ-11"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-16",
+          "type": "edge",
+          "parent": "1",
+          "source": "IjdsVlynXRgyDi3un1nQ-13",
+          "target": "00KiwmX0bt_8N0d_vmL3-25"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-15",
+          "type": "edge",
+          "parent": "1",
+          "source": "1_IO8B9Chp1znaOXYsA_-8",
+          "target": "00KiwmX0bt_8N0d_vmL3-25"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-20",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-13",
+          "type": "node",
+          "parent": "IjdsVlynXRgyDi3un1nQ-20",
+          "label": "StratBR\ns11436-modgeo-genesisplugins-stratbr",
+          "html": "<div style=\"margin-right: -30px;\"><b style=\"font-size: 16px;\">StratBR</b><span style=\"background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-size: 10px;\"></span></div><div style=\"margin-right: -30px;\"><span style=\"background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-size: 10px;\">s11436-modgeo-genesisplugins-stratbr</span></div>"
+        },
+        {
+          "id": "IjdsVlynXRgyDi3un1nQ-19",
+          "type": "node",
+          "parent": "IjdsVlynXRgyDi3un1nQ-20"
+        },
+        {
+          "id": "YyBHcM33eJHFzo8--yJA-1",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "YyBHcM33eJHFzo8--yJA-2",
+          "type": "node",
+          "parent": "1",
+          "label": "A ordem de migração apresentada neste diagrama foi determinada através de análise automatizada dos repositórios e ordenação por prioridade ou dependências críticas. Não representa necessariamente a ordem de dependências explícitas dos conanfiles de cada projeto.",
+          "html": "<div><font style=\"color: light-dark(rgb(128, 128, 128), rgb(255, 255, 255));\">A ordem de migração apresentada neste diagrama foi determinada&nbsp;<span style=\"background-color: transparent;\">através de análise automatizada dos repositórios e ordenação por prioridade ou dependências&nbsp;</span><span style=\"background-color: transparent;\">críticas. Não representa necessariamente a ordem de dependências explícitas dos&nbsp;</span><span style=\"background-color: transparent;\">conanfiles de cada projeto.</span></font></div>"
+        },
+        {
+          "id": "t8YBEvaEBbQHVmH-f5BP-1",
+          "type": "node",
+          "parent": "1",
+          "label": "Última atualização: 30/09/2026",
+          "html": "<div><font color=\"#808080\">Última atualização: 30/09/2026</font></div>"
+        }
+      ]
+    }
+  ]
+}
