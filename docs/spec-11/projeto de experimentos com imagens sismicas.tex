@@ -90,7 +90,7 @@ Para avaliar se o modelo superestima ou subestima a extensão volumétrica/super
     \item $\Delta\text{Area} = 0$: calibração dimensional ideal.
 \end{itemize}
 
-\section{Experimento A: Teste Pareado de Desempenho na Segmentação do Banco Aumentado (Wilcoxon Signed-Rank Test)}
+\section{Teste A: Teste Pareado de Desempenho na Segmentação do Banco Aumentado (Wilcoxon Signed-Rank Test)}
 
 \subsection{Objetivo e Configuração}
 Avaliar se a rede treinada com o banco aumentado ($\mathcal{M}_{\text{aug}}$) apresenta acurácia estatisticamente superior à rede base ($\mathcal{M}_{\text{base}}$) quando avaliada exatamente sobre as mesmas $800$ imagens do conjunto de teste real ($D_{\text{test}}$).
@@ -126,7 +126,7 @@ Antes de validar o resultado de Wilcoxon, deve-se verificar os seguintes pressup
     \item \textbf{Simetria da Distribuição das Diferenças}: Para que o teste de Wilcoxon seja interpretado como teste de \textit{mediana} (e não apenas de postos médios), a distribuição das diferenças $d_i$ deve ser aproximadamente simétrica em torno da mediana. Avalia-se o coeficiente de assimetria de Fisher-Pearson (\textit{skewness}) e a inspeção visual de histograma/KDE de $d_i$.
 \end{enumerate}
 
-\subsection{Como Avaliar e Interpretar o Resultado do Experimento A}
+\subsection{Como Avaliar e Interpretar o Resultado do Teste A}
 A interpretação dos resultados pelo revisor do IEEE Access exige uma análise conjunta em três níveis:
 \begin{enumerate}
     \item \textbf{Decisão de Significância Estatística ($\alpha = 0{,}05$)}:
@@ -146,7 +146,7 @@ A interpretação dos resultados pelo revisor do IEEE Access exige uma análise 
     Avalia-se a mediana da diferença ($\text{Mediana}(d)$) e a taxa de pares favoráveis (\% de imagens em que $\text{IoU}_{\text{aug}} > \text{IoU}_{\text{base}}$). Se $\text{Mediana}(d) > 0$ com ganho de, por exemplo, $+3$ a $+8$ pontos percentuais em IoU, confirma-se o sucesso operacional do treinamento sintético.
 \end{enumerate}
 
-\section{Experimento B: Análise de Viés Sistemático : Sobre-segmentação/Sub-segmentação (Mann-Whitney U / Wilcoxon Rank-Sum)}
+\section{Teste B: Análise de Viés Sistemático : Sobre-segmentação/Sub-segmentação (Mann-Whitney U / Wilcoxon Rank-Sum)}
 
 \subsection{Objetivo e Configuração}
 Verificar se a rede enriquecida ($\mathcal{M}_{\text{aug}}$) apresenta distorção ou assimetria dimensional quando aplicada a imagens sintéticas em relação às imagens reais. Avalia-se se as predições tendem a superestimar ou subestimar sistematicamente o tamanho dos objetos segmentados entre os dois domínios:
@@ -180,7 +180,7 @@ Para fundamentar o teste de Mann-Whitney U:
     \end{itemize}
 \end{enumerate}
 
-\subsection{Como Avaliar e Interpretar o Resultado do Experimento B}
+\subsection{Como Avaliar e Interpretar o Resultado do Teste B}
 A interpretação estatística e geofísica deve ser conduzida conforme os seguintes desfechos:
 \begin{enumerate}
     \item \textbf{Ausência de Viés Sistemático Diferencial ($p \ge 0{,}05$)}:
@@ -227,7 +227,7 @@ def compute_area_bias(mask_true, mask_pred):
     return float(area_pred - area_true) / float(area_true)
 
 # =========================================================================
-# EXPERIMENTO A: Wilcoxon Signed-Rank Test (Pareado, n=800)
+# TESTE A: Wilcoxon Signed-Rank Test (Pareado, n=800)
 # =========================================================================
 def run_experiment_a(iou_base, iou_aug):
     """
@@ -254,7 +254,7 @@ def run_experiment_a(iou_base, iou_aug):
     w_neg = np.sum(ranks[non_zero < 0])
     r_rb = (w_pos - w_neg) / (w_pos + w_neg) if (w_pos + w_neg) > 0 else 0.0
 
-    print("=== EXPERIMENTO A (Wilcoxon Pareado) ===")
+    print("=== TESTE A (Wilcoxon Pareado) ===")
     print(f"Mediana IoU Base: {median_base:.4f} (IQR: {iqr_base:.4f})")
     print(f"Mediana IoU Enriquecida: {median_aug:.4f} (IQR: {iqr_aug:.4f})")
     print(f"Mediana da Diferenca: {median_diff:+.4f}")
@@ -263,7 +263,7 @@ def run_experiment_a(iou_base, iou_aug):
     return {"stat": stat, "p_value": p_val, "r_rb": r_rb}
 
 # =========================================================================
-# EXPERIMENTO B: Mann-Whitney U (Nao-pareado: 800 reais x 1200 sinteticas)
+# TESTE B: Mann-Whitney U (Nao-pareado: 800 reais x 1200 sinteticas)
 # =========================================================================
 def run_experiment_b(area_bias_real, area_bias_synth):
     """
@@ -283,7 +283,7 @@ def run_experiment_b(area_bias_real, area_bias_synth):
     cles = u_stat / (n_real * m_synth)
     r_rb = 1.0 - (2.0 * u_stat) / (n_real * m_synth)
 
-    print("\n=== EXPERIMENTO B (Mann-Whitney U - Vies de Area) ===")
+    print("\n=== TESTE B (Mann-Whitney U - Vies de Area) ===")
     print(f"Mediana Vies Real (n={n_real}): {np.median(area_bias_real):+.4f}")
     print(f"Mediana Vies Sintetico (m={m_synth}): {np.median(area_bias_synth):+.4f}")
     print(f"Estatistica U: {u_stat:.2f}, p-valor: {p_val:.4e}")
@@ -299,8 +299,8 @@ def run_experiment_b(area_bias_real, area_bias_synth):
     \item \textbf{Tamanho de Efeito}: Em consonância com as boas práticas editoriais do IEEE, nunca baseie a conclusão unicamente no $p$-valor. O relato do tamanho de efeito (correlação bisserial $r$ e CLES) é indispensável para demonstrar a relevância prática do enriquecimento com imagens sintéticas.
     \item \textbf{Visualização Gráfica}:
     \begin{itemize}
-        \item Para o Experimento A: Recomenda-se um gráfico de dispersão com linha de identidade ($y = x$) ou \textit{Raincloud plot} pareado para explicitar o ganho por imagem.
-        \item Para o Experimento B: Recomenda-se a Curva Cumulativa Empírica (ECDF) ou Boxplot comparativo de $\Delta\text{Area}_{\text{real}}$ vs. $\Delta\text{Area}_{\text{synth}}$.
+        \item Para o Teste A: Recomenda-se um gráfico de dispersão com linha de identidade ($y = x$) ou \textit{Raincloud plot} pareado para explicitar o ganho por imagem.
+        \item Para o Teste B: Recomenda-se a Curva Cumulativa Empírica (ECDF) ou Boxplot comparativo de $\Delta\text{Area}_{\text{real}}$ vs. $\Delta\text{Area}_{\text{synth}}$.
     \end{itemize}
 \end{enumerate}
 

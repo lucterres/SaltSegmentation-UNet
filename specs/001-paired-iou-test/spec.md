@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Novo experimento para realizar um teste pareado de acordo com docs/spec-11/projeto de experimentos com imagens sismicas.tex - EXPERIMENTO A. Usando as redes pre treinadas. Uma rede somente com dados reais outra com reais + sinteticos. Os parametros da rede treinada com dados reais estao em resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth. Rede treinada com dados aumentados em resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth. O comportamento do codigo para realizar o teste pareado deve ser ajustavel por parametros da linha de comando, permitindo executar o experimento anterior sem novas modificacoes no codigo. O mesmo conjunto de teste sera usado, mas as IoUs serao medidas por imagem."
+**Input**: User description: "Novo experimento para realizar um teste pareado de acordo com docs/spec-11/projeto de experimentos com imagens sismicas.tex - TESTE A. Usando as redes pre treinadas. Uma rede somente com dados reais outra com reais + sinteticos. Os parametros da rede treinada com dados reais estao em resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth. Rede treinada com dados aumentados em resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth. O comportamento do codigo para realizar o teste pareado deve ser ajustavel por parametros da linha de comando, permitindo executar o teste anterior sem novas modificacoes no codigo. O mesmo conjunto de teste sera usado, mas as IoUs serao medidas por imagem."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -14,7 +14,7 @@
 
 Como pesquisador, quero avaliar os checkpoints já treinados com dados reais e com dados reais mais sintéticos nas mesmas imagens reais de teste, para medir a diferença de desempenho por imagem sem treinar novamente os modelos.
 
-**Why this priority**: A inferência pareada por imagem é o objetivo central do Experimento A e permite testar se o modelo aumentado melhora sobre a base nas mesmas amostras.
+**Why this priority**: A inferência pareada por imagem é o objetivo central do Teste A e permite testar se o modelo aumentado melhora sobre a base nas mesmas amostras.
 
 **Independent Test**: Executar a análise com os dois checkpoints válidos e o conjunto canônico de teste; confirmar que cada imagem tem uma IoU da base, uma IoU do modelo aumentado e uma diferença pareada.
 
@@ -28,7 +28,7 @@ Como pesquisador, quero avaliar os checkpoints já treinados com dados reais e c
 
 ### User Story 2 - Interpretar evidência estatística (Priority: P1)
 
-Como pesquisador, quero receber as estatísticas pareadas e os diagnósticos definidos no Experimento A, para avaliar significância, magnitude e distribuição dos ganhos sem calcular métricas manualmente.
+Como pesquisador, quero receber as estatísticas pareadas e os diagnósticos definidos no Teste A, para avaliar significância, magnitude e distribuição dos ganhos sem calcular métricas manualmente.
 
 **Why this priority**: O contraste estatístico por imagem é necessário para responder à hipótese do experimento e comunicar tanto incerteza quanto relevância prática.
 
@@ -45,7 +45,7 @@ Como pesquisador, quero receber as estatísticas pareadas e os diagnósticos def
 
 ### User Story 3 - Ajustar e reproduzir a execução pela linha de comando (Priority: P1)
 
-Como pesquisador, quero configurar caminhos e parâmetros experimentais pela linha de comando, para repetir o Experimento A ou usar outros checkpoints e conjuntos de teste sem editar o código.
+Como pesquisador, quero configurar caminhos e parâmetros do teste pela linha de comando, para repetir o Teste A ou usar outros checkpoints e conjuntos de teste sem editar o código.
 
 **Why this priority**: A execução reproduzível e ajustável é uma exigência explícita e evita alterações manuais que poderiam mudar o protocolo sem registro.
 
@@ -53,7 +53,7 @@ Como pesquisador, quero configurar caminhos e parâmetros experimentais pela lin
 
 **Acceptance Scenarios**:
 
-1. **Given** os argumentos padrão e os arquivos do Experimento A, **When** o pesquisador inicia a execução, **Then** são usados os checkpoints indicados, o conjunto canônico e a configuração padrão do protocolo.
+1. **Given** os argumentos padrão e os arquivos do Teste A, **When** o pesquisador inicia a execução, **Then** são usados os checkpoints indicados, o conjunto canônico e a configuração padrão do protocolo.
 2. **Given** caminhos de checkpoints, diretório de teste ou saída diferentes, **When** o pesquisador os fornece na linha de comando, **Then** a execução usa esses caminhos sem alteração no código.
 3. **Given** limiar, alfa e alternativa válidos fornecidos na linha de comando, **When** a análise é executada, **Then** as métricas binárias e a inferência estatística usam os valores fornecidos e registram esses valores nos resultados.
 4. **Given** argumento ausente ou fora do intervalo permitido, **When** a execução valida os parâmetros, **Then** ela apresenta uma mensagem acionável e encerra antes de reportar resultados inválidos.
@@ -76,7 +76,7 @@ Como pesquisador, quero configurar caminhos e parâmetros experimentais pela lin
 ### Functional Requirements
 
 - **FR-001**: A ferramenta MUST avaliar os checkpoints da rede base (treinada somente com dados reais) e da rede aumentada (treinada com dados reais e sintéticos) sem iniciar treinamento.
-- **FR-002**: A linha de comando MUST permitir informar os caminhos dos dois checkpoints, o diretório do conjunto de teste e o diretório de saída. Os padrões do Experimento A MUST apontar para `resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth` e `resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth`; o padrão do teste MUST ser o conjunto canônico documentado pelo projeto.
+- **FR-002**: A linha de comando MUST permitir informar os caminhos dos dois checkpoints, o diretório do conjunto de teste e o diretório de saída. Os padrões do Teste A MUST apontar para `resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth` e `resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth`; o padrão do teste MUST ser o conjunto canônico documentado pelo projeto.
 - **FR-003**: A linha de comando MUST permitir configurar limiar de binarização, alfa do teste, alternativa estatística, tamanho de lote de inferência e dispositivo de execução; valores padrão MUST reproduzir o protocolo do projeto, incluindo limiar 0,5, alfa 0,05, alternativa `greater` e seleção automática do dispositivo.
 - **FR-004**: A execução MUST usar um único conjunto de teste para os dois modelos, associar imagem e máscara pelo ID e produzir comparação apenas quando todos os IDs forem únicos e correspondentes nos dois modelos.
 - **FR-005**: A inferência MUST aplicar aos dois modelos o mesmo pré-processamento compatível com o treinamento: entrada grayscale, normalização em [0,1], dimensão de entrada de 128×128 e limiar configurado para binarizar as predições. O redimensionamento de máscaras MUST preservar rótulos binários.
@@ -101,7 +101,7 @@ Como pesquisador, quero configurar caminhos e parâmetros experimentais pela lin
 
 - **SC-001**: Para o conjunto canônico de 800 imagens, a saída contém exatamente 800 registros pareados válidos, um por ID, sem imagens avaliadas por apenas um dos modelos.
 - **SC-002**: Para cada registro, as duas IoUs e a diferença correspondem à mesma imagem e máscara; os resultados podem ser recalculados a partir da tabela por imagem.
-- **SC-003**: Um pesquisador consegue executar o Experimento A com os dois checkpoints indicados e o conjunto de teste canônico somente por argumentos de linha de comando, sem modificar arquivos de código.
+- **SC-003**: Um pesquisador consegue executar o Teste A com os dois checkpoints indicados e o conjunto de teste canônico somente por argumentos de linha de comando, sem modificar arquivos de código.
 - **SC-004**: O resumo apresenta todos os resultados estatísticos e parâmetros exigidos pelo protocolo, permitindo verificar o p-valor contra o alfa selecionado e interpretar o tamanho/direção do efeito.
 - **SC-005**: Ao substituir qualquer caminho, limiar, alfa ou alternativa válida pela linha de comando, o relatório registra a configuração efetiva e a execução usa essa configuração.
 - **SC-006**: Um pesquisador consegue identificar em uma execução se há evidência estatística de melhora, a magnitude observada e as ressalvas de distribuição, sem inferir melhora quando o teste não a sustenta.
@@ -109,10 +109,10 @@ Como pesquisador, quero configurar caminhos e parâmetros experimentais pela lin
 ## Assumptions
 
 - O conjunto canônico é o test set real de 800 imagens documentado em `/var/tmp/cym7/datasets/subset_split/test`; `--test-dir` pode substituí-lo para outros ambientes.
-- Os dois checkpoints fornecidos são os padrões para reproduzir este Experimento A e podem ser substituídos por argumentos de linha de comando.
+- Os dois checkpoints fornecidos são os padrões para reproduzir este Teste A e podem ser substituídos por argumentos de linha de comando.
 - O caminho de saída padrão é `resultsHPC/paired_iou_test_a`; ele pode ser substituído pela linha de comando.
 - O pré-processamento e a definição de IoU seguem o treinamento existente: threshold 0,5 por padrão e denominador com epsilon, portanto uma união vazia resulta em IoU zero para manter comparabilidade.
-- O teste estatístico padrão é unilateral (`greater`) com alfa 0,05, conforme o documento do Experimento A. A alternativa pode ser ajustada pela linha de comando, sem mudar o padrão documentado.
+- O teste estatístico padrão é unilateral (`greater`) com alfa 0,05, conforme o documento do Teste A. A alternativa pode ser ajustada pela linha de comando, sem mudar o padrão documentado.
 - Shapiro-Wilk e assimetria são diagnósticos; o Wilcoxon continua sendo o teste especificado. Uma interpretação como diferença de medianas depende de distribuição das diferenças aproximadamente simétrica.
 - O experimento compara uma execução/checkpoint por cenário; não estima variação entre seeds.
 - O objetivo é gerar análise e artefatos estatísticos reproduzíveis; atualizar manuscrito, resposta a revisores ou executar novo treinamento está fora do escopo.
