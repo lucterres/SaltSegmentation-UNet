@@ -1,6 +1,6 @@
-PWD d:\0Code\_phdSeismic\Segmentation-Unet-Experiment\docs\spec-11
+PWD C:\Dados\0Code\_phdSeismic\Segmentation-Unet-Experiment
 INPUT C:\Users\lucia\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT d:\0Code\_phdSeismic\Segmentation-Unet-Experiment\docs\spec-11\projeto de experimentos com imagens sismicas.tex
+INPUT C:\Dados\0Code\_phdSeismic\Segmentation-Unet-Experiment\docs\spec-11\projeto de experimentos com imagens sismicas.tex
 OUTPUT projeto de experimentos com imagens sismicas.log
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
@@ -137,8 +137,14 @@ OUTPUT projeto de experimentos com imagens sismicas.aux
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\microtype\mt-cmr.cfg
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\microtype\mt-cmr.cfg
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\microtype\mt-cmr.cfg
-OUTPUT projeto de experimentos com imagens sismicas.out
+INPUT .\projeto de experimentos com imagens sismicas.out
+INPUT .\projeto de experimentos com imagens sismicas.out
+INPUT projeto de experimentos com imagens sismicas.out
+INPUT projeto de experimentos com imagens sismicas.out
 OUTPUT projeto de experimentos com imagens sismicas.pdf
+INPUT .\projeto de experimentos com imagens sismicas.out
+INPUT .\projeto de experimentos com imagens sismicas.out
+OUTPUT projeto de experimentos com imagens sismicas.out
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\context\base\mkii\supp-pdf.mkii
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\context\base\mkii\supp-pdf.mkii
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\context\base\mkii\supp-pdf.mkii
@@ -191,3 +197,50 @@ INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecti109
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecbx0800.tfm
 INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecbx0600.tfm
 INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\listings\lstlang1.sty
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\listings\lstlang1.sty
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\tex\latex\listings\lstlang1.sty
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ectt1095.tfm
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ectt0900.tfm
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecrm0900.tfm
+INPUT projeto de experimentos com imagens sismicas.aux
+INPUT .\projeto de experimentos com imagens sismicas.out
+INPUT .\projeto de experimentos com imagens sismicas.out
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ectt0900.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ectt0900.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm0600.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm0600.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecti1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecti1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1200.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1200.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm0800.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm0800.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm1095.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1440.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1440.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm1200.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm1200.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1728.pk
+INPUT C:\Users\lucia\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1728.pk
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi8.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi8.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr12.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr12.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr8.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr8.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy10.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy8.pfb
+INPUT C:\Users\lucia\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy8.pfb
