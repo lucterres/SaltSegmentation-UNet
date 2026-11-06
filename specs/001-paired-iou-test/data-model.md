@@ -6,13 +6,18 @@ persistent database or mutable workflow state.
 
 ## Test Pair
 
-One real test example shared by both model evaluations.
+One canonical real test example shared by both model evaluations. The canonical
+directory contains 800 image/mask pairs whose image IDs match `test_set.csv` exactly;
+`output/test_paths.txt` is a different split and is not an input to this feature.
 
 | Field | Type | Validation |
 |---|---|---|
 | `image_id` | string | Unique file stem; must exist in both image and mask sets |
 | `image_path` | filesystem path | Readable grayscale image |
 | `mask_path` | filesystem path | Readable binary ground-truth mask; resized with nearest neighbor |
+
+**Canonical directory**: `/var/tmp/cym7/datasets/subset_split/test` on HPC or
+`D:\dataset\tgs-salt\subset_split\test` on Windows.
 
 **Relationship**: Each `Test Pair` yields exactly one `Per-Image Result` containing
 metrics from both checkpoints.

@@ -39,11 +39,11 @@ description: "Implementation tasks for paired per-image IoU analysis"
 
 ### Tests for User Story 1
 
-- [ ] T003 [US1] Add tests in `Salt-Segmentation-UNet/tests/test_paired_iou_test.py` for stable ID pairing, duplicate/missing image-mask IDs, grayscale 128x128 preprocessing, nearest-neighbor binary masks, per-image IoU/Dice, and the spec-approved IoU=0 empty-union convention.
+- [ ] T003 [US1] Add tests in `Salt-Segmentation-UNet/tests/test_paired_iou_test.py` for stable ID pairing, duplicate/missing image-mask IDs, canonical test-directory defaults, grayscale 128x128 preprocessing, nearest-neighbor binary masks, per-image IoU/Dice, and the spec-approved IoU=0 empty-union convention.
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Implement image/mask discovery keyed by unique file stem, validation that all pairs are complete, and deterministic ID sorting in `Salt-Segmentation-UNet/paired_iou_test.py`.
+- [ ] T004 [US1] Implement canonical local/HPC test-directory defaults, image/mask discovery keyed by unique file stem, validation that all pairs are complete, and deterministic ID sorting in `Salt-Segmentation-UNet/paired_iou_test.py`; do not use `Salt-Segmentation-UNet/output/test_paths.txt` as the canonical source.
 - [ ] T005 [US1] Implement batched inference of both loaded checkpoints on every validated test ID, compute per-image IoU and Dice using the shared ground-truth mask, and write stable-ID-sorted `per_image_metrics.csv` in `Salt-Segmentation-UNet/paired_iou_test.py`.
 
 **Checkpoint**: The MVP evaluates the two default checkpoints without training and writes exactly one paired metric row per test ID; invalid pairs or checkpoints stop with an actionable error.
@@ -77,11 +77,11 @@ description: "Implementation tasks for paired per-image IoU analysis"
 
 ### Tests for User Story 3
 
-- [ ] T009 [US3] Add CLI tests in `Salt-Segmentation-UNet/tests/test_paired_iou_test.py` for default paths/settings, valid overrides, invalid threshold/alpha/alternative/batch/device values, and missing checkpoint/test paths.
+- [ ] T009 [US3] Add CLI tests in `Salt-Segmentation-UNet/tests/test_paired_iou_test.py` for canonical Windows/HPC test-directory defaults, valid path overrides, invalid threshold/alpha/alternative/batch/device values, and missing checkpoint/test paths.
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Implement and integrate `argparse` options in `Salt-Segmentation-UNet/paired_iou_test.py` for `--base-checkpoint`, `--aug-checkpoint`, `--test-dir`, `--output-dir`, `--threshold`, `--alpha`, `--alternative`, `--batch-size`, and `--device`; set the specified TESTE A defaults, validate values before inference, and record effective values in `summary.json`.
+- [ ] T010 [US3] Implement and integrate `argparse` options in `Salt-Segmentation-UNet/paired_iou_test.py` for `--base-checkpoint`, `--aug-checkpoint`, `--test-dir`, `--output-dir`, `--threshold`, `--alpha`, `--alternative`, `--batch-size`, and `--device`; set canonical local/HPC TESTE A test-directory defaults, validate values before inference, and record effective values in `summary.json`.
 
 **Checkpoint**: The default command reproduces TESTE A, and valid CLI overrides take effect without source edits while invalid arguments exit before reporting results.
 
@@ -92,7 +92,7 @@ description: "Implementation tasks for paired per-image IoU analysis"
 **Purpose**: Keep the validation guide aligned with the final CLI and verify the complete flow.
 
 - [ ] T011 Update `specs/001-paired-iou-test/quickstart.md` to match the final CLI help, output fields, checkpoint defaults, and canonical-test invocation in `Salt-Segmentation-UNet/paired_iou_test.py`.
-- [ ] T012 Run `Push-Location Salt-Segmentation-UNet; python -m unittest discover -s tests -p "test_paired_iou_test.py" -v; Pop-Location` and execute the end-to-end command from `specs/001-paired-iou-test/quickstart.md`; verify 800 paired rows and all documented output files.
+- [ ] T012 Run `Push-Location Salt-Segmentation-UNet; python -m unittest discover -s tests -p "test_paired_iou_test.py" -v; Pop-Location` and execute the end-to-end command from `specs/001-paired-iou-test/quickstart.md`; verify 800 paired rows, exact ID equality with `D:\dataset\tgs-salt\subset_split\test_set.csv`, and all documented output files.
 
 ---
 

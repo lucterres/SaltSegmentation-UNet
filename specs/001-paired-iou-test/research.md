@@ -28,14 +28,20 @@ interfaces keeps the analysis comparable and avoids duplicating the network.
 implementation into the new script; rejected because training saves state dicts and
 `UNet` is already available in the project.
 
-## Decision 3: Pair strictly by image ID and fail closed
+## Decision 3: Use the canonical test split and pair strictly by ID
 
-**Decision**: Build image/mask maps keyed by file stem, reject duplicate IDs or any
-missing image/mask, sort validated IDs, and calculate both model results for every ID.
-Do not silently intersect incomplete lists.
+**Decision**: Use `/var/tmp/cym7/datasets/subset_split/test` on HPC or
+`D:\dataset\tgs-salt\subset_split\test` on Windows. The canonical folder must contain
+the 800 IDs listed by `D:\dataset\tgs-salt\subset_split\test_set.csv`. Build
+image/mask maps keyed by file stem, reject duplicate IDs or any missing image/mask, sort
+validated IDs, and calculate both model results for every ID. Do not silently intersect
+incomplete lists or substitute `Salt-Segmentation-UNet/output/test_paths.txt`.
 
-**Rationale**: The paired test is valid only when both scores refer to the same test
-image and ground-truth mask. Stable ID ordering makes CSV output reproducible.
+**Rationale**: The local canonical test folder has 800 image and 800 mask files, and its
+image IDs match `test_set.csv` exactly. The code-generated `output/test_paths.txt` also
+has 800 entries but only 168 IDs overlap with the canonical CSV; equal counts do not
+establish equal test sets. The paired test is valid only when both model scores refer to
+the same canonical image and mask. Stable ID ordering makes CSV output reproducible.
 
 ## Decision 4: Compute metrics per image; test IoU only
 

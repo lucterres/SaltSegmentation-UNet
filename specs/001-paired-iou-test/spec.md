@@ -76,9 +76,9 @@ Como pesquisador, quero configurar caminhos e parâmetros do teste pela linha de
 ### Functional Requirements
 
 - **FR-001**: A ferramenta MUST avaliar os checkpoints da rede base (treinada somente com dados reais) e da rede aumentada (treinada com dados reais e sintéticos) sem iniciar treinamento.
-- **FR-002**: A linha de comando MUST permitir informar os caminhos dos dois checkpoints, o diretório do conjunto de teste e o diretório de saída. Os padrões do Teste A MUST apontar para `resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth` e `resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth`; o padrão do teste MUST ser o conjunto canônico documentado pelo projeto.
+- **FR-002**: A linha de comando MUST permitir informar os caminhos dos dois checkpoints, o diretório do conjunto de teste e o diretório de saída. Os padrões do Teste A MUST apontar para `resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth` e `resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth`; o diretório de teste canônico MUST ser `/var/tmp/cym7/datasets/subset_split/test` no HPC e seu equivalente local `D:\dataset\tgs-salt\subset_split\test` no Windows.
 - **FR-003**: A linha de comando MUST permitir configurar limiar de binarização, alfa do teste, alternativa estatística, tamanho de lote de inferência e dispositivo de execução; valores padrão MUST reproduzir o protocolo do projeto, incluindo limiar 0,5, alfa 0,05, alternativa `greater` e seleção automática do dispositivo.
-- **FR-004**: A execução MUST usar um único conjunto de teste para os dois modelos, associar imagem e máscara pelo ID e produzir comparação apenas quando todos os IDs forem únicos e correspondentes nos dois modelos.
+- **FR-004**: A execução MUST usar um único conjunto de teste para os dois modelos, associar imagem e máscara pelo ID e produzir comparação apenas quando todos os IDs forem únicos e correspondentes nos dois modelos. O conjunto canônico MUST conter exatamente os 800 IDs de `test_set.csv`; `Salt-Segmentation-UNet/output/test_paths.txt` MUST NOT ser usado como fonte desse conjunto.
 - **FR-005**: A inferência MUST aplicar aos dois modelos o mesmo pré-processamento compatível com o treinamento: entrada grayscale, normalização em [0,1], dimensão de entrada de 128×128 e limiar configurado para binarizar as predições. O redimensionamento de máscaras MUST preservar rótulos binários.
 - **FR-006**: A ferramenta MUST calcular IoU individual para cada imagem e modelo antes de qualquer resumo, e MUST calcular a diferença pareada como IoU aumentada menos IoU base.
 - **FR-007**: A análise MUST executar o Wilcoxon signed-rank pareado com alternativa configurável; o padrão MUST testar a hipótese direcional de IoU aumentada maior que IoU base. O resultado MUST incluir estatística, p-valor, alfa, direção da hipótese e decisão sem alegar ganho quando não sustentado pelos dados.
@@ -99,7 +99,7 @@ Como pesquisador, quero configurar caminhos e parâmetros do teste pela linha de
 
 ### Measurable Outcomes
 
-- **SC-001**: Para o conjunto canônico de 800 imagens, a saída contém exatamente 800 registros pareados válidos, um por ID, sem imagens avaliadas por apenas um dos modelos.
+- **SC-001**: Para o conjunto canônico de 800 imagens, a saída contém exatamente 800 registros pareados válidos, um por ID, com IDs idênticos aos de `test_set.csv` e sem imagens avaliadas por apenas um dos modelos.
 - **SC-002**: Para cada registro, as duas IoUs e a diferença correspondem à mesma imagem e máscara; os resultados podem ser recalculados a partir da tabela por imagem.
 - **SC-003**: Um pesquisador consegue executar o Teste A com os dois checkpoints indicados e o conjunto de teste canônico somente por argumentos de linha de comando, sem modificar arquivos de código.
 - **SC-004**: O resumo apresenta todos os resultados estatísticos e parâmetros exigidos pelo protocolo, permitindo verificar o p-valor contra o alfa selecionado e interpretar o tamanho/direção do efeito.
@@ -108,7 +108,8 @@ Como pesquisador, quero configurar caminhos e parâmetros do teste pela linha de
 
 ## Assumptions
 
-- O conjunto canônico é o test set real de 800 imagens documentado em `/var/tmp/cym7/datasets/subset_split/test`; `--test-dir` pode substituí-lo para outros ambientes.
+- O conjunto canônico é `/var/tmp/cym7/datasets/subset_split/test` no HPC e `D:\dataset\tgs-salt\subset_split\test` no Windows; ambos têm 800 IDs que correspondem exatamente a `D:\dataset\tgs-salt\subset_split\test_set.csv`. `--test-dir` pode substituí-lo para outros testes, mas os resultados substitutos não são o Teste A canônico.
+- `Salt-Segmentation-UNet/output/test_paths.txt` lista outro split (apenas 168 IDs coincidem) e não representa o conjunto canônico deste teste.
 - Os dois checkpoints fornecidos são os padrões para reproduzir este Teste A e podem ser substituídos por argumentos de linha de comando.
 - O caminho de saída padrão é `resultsHPC/paired_iou_test_a`; ele pode ser substituído pela linha de comando.
 - O pré-processamento e a definição de IoU seguem o treinamento existente: threshold 0,5 por padrão e denominador com epsilon, portanto uma união vazia resulta em IoU zero para manter comparabilidade.

@@ -9,8 +9,11 @@ Python project directory.
 - Python environment used by the experiment, with the existing PyTorch, SciPy, NumPy,
   pandas, OpenCV, and Matplotlib dependencies installed.
 - Readable base and augmented checkpoints.
-- The fixed 800-image real test set, containing matching `images/` and `masks/`
-  directories.
+- The canonical 800-image real test set, containing matching `images/` and `masks/`
+  directories. Use `D:\dataset\tgs-salt\subset_split\test` on Windows or
+  `/var/tmp/cym7/datasets/subset_split/test` on HPC. The Windows folder's 800 image IDs
+  match `D:\dataset\tgs-salt\subset_split\test_set.csv` exactly. Do not use
+  `Salt-Segmentation-UNet/output/test_paths.txt`; it is a different split.
 
 ## 1. Run focused unit tests
 
@@ -25,18 +28,35 @@ pass.
 
 ## 2. Run TESTE A with the documented checkpoints
 
+On Windows, use the verified canonical folder:
+
 ```powershell
+$expectedIds = @(Import-Csv 'D:\dataset\tgs-salt\subset_split\test_set.csv' | ForEach-Object { $_.id } | Sort-Object -Unique)
+$actualIds = @(Get-ChildItem 'D:\dataset\tgs-salt\subset_split\test\images' -File | ForEach-Object { $_.BaseName } | Sort-Object -Unique)
+if ($expectedIds.Count -ne 800 -or $actualIds.Count -ne 800 -or (Compare-Object $expectedIds $actualIds).Count -ne 0) { throw 'Canonical test IDs do not match test_set.csv.' }
+
 python Salt-Segmentation-UNet/paired_iou_test.py `
   --base-checkpoint resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth `
   --aug-checkpoint resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth `
-  --test-dir /var/tmp/cym7/datasets/subset_split/test `
+  --test-dir D:\dataset\tgs-salt\subset_split\test `
+  --output-dir resultsHPC/paired_iou_test_a
+```
+
+On HPC, use the equivalent canonical path:
+
+```bash
+python Salt-Segmentation-UNet/paired_iou_test.py \
+  --base-checkpoint resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth \
+  --aug-checkpoint resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth \
+  --test-dir /var/tmp/cym7/datasets/subset_split/test \
   --output-dir resultsHPC/paired_iou_test_a
 ```
 
 Expected: the command loads both state dictionaries without training, validates the
-same 800 image/mask IDs, evaluates both models in batches with grayscale 128x128 inputs,
-and reports per-image IoU and Dice plus a one-sided paired Wilcoxon test with threshold
-0.5 and alpha 0.05.
+same 800 canonical image/mask IDs, evaluates both models in batches with grayscale
+128x128 inputs, and reports per-image IoU and Dice plus a one-sided paired Wilcoxon test
+with threshold 0.5 and alpha 0.05. On Windows, verify that the IDs in `test/images`
+match `test_set.csv` before the run.
 
 ## 3. Check outputs
 

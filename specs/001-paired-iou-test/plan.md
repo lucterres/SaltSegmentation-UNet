@@ -32,15 +32,18 @@ overridden through the CLI.
 hard runtime target is specified.
 
 **Constraints**: Reuse `utils.config`, `utils.model.UNet`, and existing grayscale,
-128x128, `[0,1]`, nearest-neighbor mask preprocessing conventions. Defaults are the
-two specified checkpoints, canonical real test set, threshold 0.5, alpha 0.05, and
-one-sided `greater`. Match pairs by unique image ID and reject incomplete pairs. Apply
-the spec-approved IoU=0 convention when union is empty, although the TeX sample helper
-uses IoU=1 for empty-empty. No web interface, training flow, or change to
-run-level `evaluate.py`.
+128x128, `[0,1]`, nearest-neighbor mask preprocessing conventions. The canonical test
+set is `/var/tmp/cym7/datasets/subset_split/test` on HPC and
+`D:\dataset\tgs-salt\subset_split\test` on Windows; both contain the exact 800 IDs
+in `D:\dataset\tgs-salt\subset_split\test_set.csv`. Do not use
+`Salt-Segmentation-UNet/output/test_paths.txt`, which contains another split. Defaults
+are the two specified checkpoints, threshold 0.5, alpha 0.05, and one-sided `greater`.
+Match pairs by unique image ID and reject incomplete pairs. Apply the spec-approved
+IoU=0 convention when union is empty, although the TeX sample helper uses IoU=1 for
+empty-empty. No web interface, training flow, or change to run-level `evaluate.py`.
 
-**Scale/Scope**: One checkpoint per scenario, one fixed set of 800 real test images,
-per-image metrics and a single paired statistical analysis.
+**Scale/Scope**: One checkpoint per scenario, the canonical fixed set of 800 real test
+images, per-image metrics and a single paired statistical analysis.
 
 ## Constitution Check
 

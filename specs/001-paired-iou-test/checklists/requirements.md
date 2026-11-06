@@ -21,6 +21,7 @@
 - [x] Edge cases are identified
 - [x] Scope is clearly bounded
 - [x] Dependencies and assumptions identified
+- [x] Canonical test source and exact 800-ID membership are explicit
 
 ## Feature Readiness
 
@@ -33,6 +34,6 @@
 
 - The same 800 real test images are paired by unique image ID; the spec fails closed on incomplete or mismatched pairs.
 - The CLI options are treated as the requested user-facing behavior, not as implementation architecture.
-- The specified checkpoints exist in the workspace. The canonical test path is documented by the project and remains overridable.
+- The specified checkpoints exist in the workspace. `subset_split/test` contains the exact 800 IDs from `test_set.csv`; `output/test_paths.txt` is a different split and is excluded.
 - The comparison follows the per-image Wilcoxon protocol, distinct from the existing run-level paired t-test.
-- No unresolved clarification markers remain; the spec is ready for `/speckit-plan`.
+- No unresolved clarification markers remain; the plan and task list are generated.
