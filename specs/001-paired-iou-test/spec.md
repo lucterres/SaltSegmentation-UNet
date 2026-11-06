@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Novo experimento para realizar um teste pareado de acordo com docs/spec-11/projeto de experimentos com imagens sismicas.tex - TESTE A. Usando as redes pre treinadas. Uma rede somente com dados reais outra com reais + sinteticos. Os parametros da rede treinada com dados reais estao em resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth. Rede treinada com dados aumentados em resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth. O comportamento do codigo para realizar o teste pareado deve ser ajustavel por parametros da linha de comando, permitindo executar o teste anterior sem novas modificacoes no codigo. O mesmo conjunto de teste sera usado, mas as IoUs serao medidas por imagem."
+**Input**: User description: "Novo experimento para realizar um teste pareado de acordo com docs/spec-11/projeto de experimentos com imagens sismicas.tex - TESTE A. Usando as redes pre treinadas. Uma rede somente com dados reais outra com reais + sinteticos. Os parametros da rede treinada com dados reais estao em resultsHPC/scenario_A_seed42_nreal1200_train/best_model.pth. Rede treinada com dados aumentados em resultsHPC/scenario_B_seed42_nreal1200_train_pairs1600_seismic_ns1200/best_model.pth. O comportamento do codigo para realizar o teste pareado deve ser ajustavel por parametros da linha de comando, permitindo executar o experimento anterior sem novas modificacoes no codigo. O mesmo conjunto de teste sera usado, mas as IoUs serao medidas por imagem."
 
 ## User Scenarios & Testing *(mandatory)*
 
