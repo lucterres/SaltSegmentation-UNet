@@ -1,0 +1,307 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{geometry}
+\geometry{top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{black!20}
+}
+\lstset{style=pythonstyle}
+
+\title{\textbf{Projeto de Experimentos Estatísticos com Imagens Sísmicas}\\
+\large Segmentação de Rochas Salinas e Enriquecimento Sintético de Dados (IEEE Access)}
+
+
+\begin{document}
+
+\maketitle
+
+
+\section{Especificação e Delineamento dos Dados}
+
+O banco de dados sísmico original é composto por 4.000 imagens reais, divididas em:
+\begin{itemize}
+    \item \textbf{2.400 imagens reais com ocorrência de sal}:
+    \begin{itemize}
+        \item $1.200$ imagens alocadas no conjunto de treinamento real ($D_{\text{real\_train}}$);
+        \item $800$ imagens reservadas exclusivamente para o conjunto de teste real ($D_{\text{test}}$);
+        \item $400$ imagens mantidas para validação/ajuste de hiperparâmetros.
+    \end{itemize}
+    \item \textbf{1.600 imagens reais sem ocorrência de sal}.
+    \item \textbf{1.200 imagens sintéticas} geradas por simulação com ocorrência de corpos de sal ($D_{\text{synth}}$).
+\end{itemize}
+
+Duas arquiteturas de rede neural de segmentação são comparadas:
+\begin{enumerate}
+    \item $\mathcal{M}_{\text{base}}$: Rede treinada estritamente com a base real ($1.200$ imagens com sal);
+    \item $\mathcal{M}_{\text{aug}}$: Rede treinada com a base enriquecida ($1.200$ reais + $1.200$ sintéticas com sal).
+\end{enumerate}
+
+\section{Métricas de Avaliação}
+
+\subsection{Medida de Segmentação: Intersection over Union (IoU)}
+A acurácia de sobreposição espacial é quantificada pelo índice de Jaccard (IoU), estritamente no intervalo $[0, 1]$:
+\begin{equation}
+\text{IoU}(Y, \hat{Y}) = \frac{|Y \cap \hat{Y}|}{|Y \cup \hat{Y}|}
+\end{equation}
+onde $Y$ representa a máscara de referência (\textit{ground truth}) e $\hat{Y}$ a predição binária gerada pela rede. 
+
+No caso particular em que ambos são nulos ($|Y| = 0$ e $|\hat{Y}| = 0$), define-se $\text{IoU} = 1{,}0$. Se a rede prediz falsos corpos de sal quando não há presença ($|Y|=0$ e $|\hat{Y}|>0$), $\text{IoU} = 0{,}0$.
+
+\subsection{Medida de Viés de Segmentação: Erro Relativo de Área ($\Delta\text{Area}$)}
+Para avaliar se o modelo superestima ou subestima a extensão volumétrica/superficial das rochas salinas, define-se o desvio relativo de área:
+\begin{equation}
+\Delta\text{Area} = \frac{\text{Área}(\hat{Y}) - \text{Área}(Y)}{\text{Área}(Y)}
+\end{equation}
+\begin{itemize}
+    \item $\Delta\text{Area} > 0$: superestimação sistemática da extensão do sal;
+    \item $\Delta\text{Area} < 0$: subestimação sistemática da extensão do sal;
+    \item $\Delta\text{Area} = 0$: calibração dimensional ideal.
+\end{itemize}
+
+\section{Experimento A: Teste Pareado de Desempenho na Segmentação do Banco Aumentado (Wilcoxon Signed-Rank Test)}
+
+\subsection{Objetivo e Configuração}
+Avaliar se a rede treinada com o banco aumentado ($\mathcal{M}_{\text{aug}}$) apresenta acurácia estatisticamente superior à rede base ($\mathcal{M}_{\text{base}}$) quando avaliada exatamente sobre as mesmas $800$ imagens do conjunto de teste real ($D_{\text{test}}$).
+
+Para cada imagem $i \in \{1, \dots, 800\}$, calcula-se a diferença pareada:
+\begin{equation}
+d_i = \text{IoU}(\mathcal{M}_{\text{aug}}(x_i), y_i) - \text{IoU}(\mathcal{M}_{\text{base}}(x_i), y_i)
+\end{equation}
+
+\subsection{Hipóteses Estatísticas (Unilateral)}
+\begin{itemize}
+    \item $H_0: \text{Mediana}(d) \le 0$ (O enriquecimento com sintéticas não melhora o IoU na base real de teste).
+    \item $H_1: \text{Mediana}(d) > 0$ (O enriquecimento melhora significativamente o IoU na base real de teste).
+\end{itemize}
+
+\subsection{Tamanho de Efeito}
+O tamanho de efeito para o teste pareado de postos sinalizados de Wilcoxon é reportado via correlação bisserial por postos (\textit{matched-pairs rank-biserial correlation}):
+\begin{equation}
+r = \frac{W^+ - W^-}{W^+ + W^-}
+\end{equation}
+onde $W^+$ e $W^-$ são a soma das ordens dos postos com diferenças positivas e negativas, respectivamente.
+
+\subsection{Validação Estatística das Premissas (Checklist Metodológico)}
+Antes de validar o resultado de Wilcoxon, deve-se verificar os seguintes pressupostos:
+\begin{enumerate}
+    \item \textbf{Dependência Pareada e Independência entre Pares}: Cada par de medidas $(x_i^{\text{aug}}, x_i^{\text{base}})$ é obtido sobre a exata mesma imagem sísmica real $i$. As imagens de teste foram amostradas de forma independente, garantindo que os pares sejam mutuamente independentes.
+    \item \textbf{Nível de Mensuração Contínuo/Ordinal}: O índice de Jaccard (IoU) é uma variável contínua no intervalo $[0, 1]$, satisfazendo a exigência de escala estritamente ordinal/contínua.
+    \item \textbf{Verificação de Não-Normalidade das Diferenças}: Aplica-se o teste de Shapiro-Wilk sobre as diferenças $d_i$:
+    \begin{equation}
+    W_{\text{shapiro}} = \frac{\left(\sum a_i d_{(i)}\right)^2}{\sum (d_i - \bar{d})^2}
+    \end{equation}
+    Caso $p_{\text{shapiro}} < 0{,}05$, rejeita-se a normalidade, justificando formalmente a inadequação do teste $t$ de Student pareado e a necessidade do teste não-paramétrico de Wilcoxon.
+    \item \textbf{Simetria da Distribuição das Diferenças}: Para que o teste de Wilcoxon seja interpretado como teste de \textit{mediana} (e não apenas de postos médios), a distribuição das diferenças $d_i$ deve ser aproximadamente simétrica em torno da mediana. Avalia-se o coeficiente de assimetria de Fisher-Pearson (\textit{skewness}) e a inspeção visual de histograma/KDE de $d_i$.
+\end{enumerate}
+
+\subsection{Como Avaliar e Interpretar o Resultado do Experimento A}
+A interpretação dos resultados pelo revisor do IEEE Access exige uma análise conjunta em três níveis:
+\begin{enumerate}
+    \item \textbf{Decisão de Significância Estatística ($\alpha = 0{,}05$)}:
+    \begin{itemize}
+        \item Se $p < 0{,}05$: Rejeita-se $H_0$. Há evidência estatística de que o modelo enriquecido com sintéticas ($\mathcal{M}_{\text{aug}}$) gera desempenho superior ao modelo base ($\mathcal{M}_{\text{base}}$) em imagens reais não vistas.
+        \item Se $p \ge 0{,}05$: Não se rejeita $H_0$. Conclui-se que o acréscimo de sintéticas não proporcionou ganho detectável de segmentação.
+    \end{itemize}
+    \item \textbf{Magnitude e Relevância Prática (Tamanho de Efeito $r$)}:
+    De acordo com os critérios convencionais de Cohen/Kerby para correlação bisserial:
+    \begin{itemize}
+        \item $|r| < 0{,}10$: Efeito nulo ou desprezível;
+        \item $0{,}10 \le |r| < 0{,}30$: Efeito pequeno (ganho modesto);
+        \item $0{,}30 \le |r| < 0{,}50$: Efeito moderado (ganho consistente e perceptível nas inferências sísmicas);
+        \item $|r| \ge 0{,}50$: Efeito grande (impacto substancial do aumento sintético).
+    \end{itemize}
+    \item \textbf{Impacto Clínico/Operacional nas Métricas}:
+    Avalia-se a mediana da diferença ($\text{Mediana}(d)$) e a taxa de pares favoráveis (\% de imagens em que $\text{IoU}_{\text{aug}} > \text{IoU}_{\text{base}}$). Se $\text{Mediana}(d) > 0$ com ganho de, por exemplo, $+3$ a $+8$ pontos percentuais em IoU, confirma-se o sucesso operacional do treinamento sintético.
+\end{enumerate}
+
+\section{Experimento B: Análise de Viés Sistemático : Sobre-segmentação/Sub-segmentação (Mann-Whitney U / Wilcoxon Rank-Sum)}
+
+\subsection{Objetivo e Configuração}
+Verificar se a rede enriquecida ($\mathcal{M}_{\text{aug}}$) apresenta distorção ou assimetria dimensional quando aplicada a imagens sintéticas em relação às imagens reais. Avalia-se se as predições tendem a superestimar ou subestimar sistematicamente o tamanho dos objetos segmentados entre os dois domínios:
+\begin{itemize}
+    \item Grupo 1 ($n = 800$): Erros relativos de área na base de teste real, $\Delta\text{Area}_{\text{real}}$;
+    \item Grupo 2 ($m = 1.200$): Erros relativos de área na base sintética, $\Delta\text{Area}_{\text{synth}}$.
+\end{itemize}
+
+\subsection{Hipóteses Estatísticas (Bilateral)}
+\begin{itemize}
+    \item $H_0$: A distribuição de $\Delta\text{Area}_{\text{synth}}$ é equivalente à de $\Delta\text{Area}_{\text{real}}$ ($P(\Delta\text{Area}_{\text{synth}} > \Delta\text{Area}_{\text{real}}) = 0{,}5$).
+    \item $H_1$: As distribuições diferem estocasticamente, indicando tendência sistemática de superestimação ou subestimação relativa entre imagens reais e sintéticas.
+\end{itemize}
+
+\subsection{Tamanho de Efeito}
+O tamanho de efeito é mensurado por:
+\begin{equation}
+\text{CLES} = \frac{U}{n \cdot m}, \qquad r = 1 - \frac{2U}{n \cdot m}
+\end{equation}
+onde $\text{CLES}$ (\textit{Common Language Effect Size}) representa a probabilidade de superioridade empírica.
+
+\subsection{Validação Estatística das Premissas (Checklist Metodológico)}
+Para fundamentar o teste de Mann-Whitney U:
+\begin{enumerate}
+    \item \textbf{Independência entre os Grupos}: As $800$ imagens de teste reais e as $1.200$ imagens sintéticas constituem amostras completamente independentes (geradores distintos e sem compartilhamento amostral).
+    \item \textbf{Continuidade e Ordinalidade da Métrica de Viés}: $\Delta\text{Area}$ varia em escala contínua (excluindo-se ou tratando separadamente imagens sem sal no ground-truth).
+    \item \textbf{Homogeneidade das Formas de Distribuição}:
+    \begin{itemize}
+        \item Se os dois grupos apresentarem densidades empíricas com formatos similares (verificados por teste de Levene para homogeneidade de variâncias de postos ou inspeção gráfica via curvas KDE), o teste de Mann-Whitney testa rigorosamente a \textbf{diferença entre medianas}.
+        \item Se os formatos forem heterogêneos, o teste avalia a \textbf{dominância estocástica} ($P(X > Y) \neq 0{,}5$).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Como Avaliar e Interpretar o Resultado do Experimento B}
+A interpretação estatística e geofísica deve ser conduzida conforme os seguintes desfechos:
+\begin{enumerate}
+    \item \textbf{Ausência de Viés Sistemático Diferencial ($p \ge 0{,}05$)}:
+    \begin{itemize}
+        \item Não se rejeita $H_0$. Indica que o comportamento preditivo da rede neural em relação à escala dos corpos salinos é estatisticamente idêntico em imagens reais e sintéticas. Isso valida a fidelidade morfológica das imagens geradas pelo simulador.
+    \end{itemize}
+    \item \textbf{Presença de Viés Sistemático Diferencial ($p < 0{,}05$)}:
+    \begin{itemize}
+        \item Rejeita-se $H_0$. Há distorção sistemática de área entre os domínios. A direção da tendência é revelada pela comparação das medianas e pelo sinal de $r$:
+        \begin{itemize}
+            \item Se $\text{Mediana}(\Delta\text{Area}_{\text{synth}}) > \text{Mediana}(\Delta\text{Area}_{\text{real}})$ (e $r < 0$ / $\text{CLES} > 0{,}5$): A rede tende a \textbf{superestimar} (sobre-segmentar) os corpos de sal sintéticos quando comparados aos reais.
+            \item Se $\text{Mediana}(\Delta\text{Area}_{\text{synth}}) < \text{Mediana}(\Delta\text{Area}_{\text{real}})$: A rede tende a \textbf{subestimar} (sub-segmentar) nas sintéticas, indicando que o simulador gera feições de sal que a rede detecta com maior conservadorismo de bordas.
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{Critério de Tolerância Geofísica}:
+    Mesmo com $p < 0{,}05$, caso a diferença entre as medianas seja dimensionalmente desprezível (ex: $|\text{Mediana}_{\text{synth}} - \text{Mediana}_{\text{real}}| < 2\%$) e o tamanho de efeito for insignificante ($|r| < 0{,}10$), reporta-se que o desvio estatístico reflete o grande poder amostral ($n+m=2.000$) e não um viés com relevância prática.
+\end{enumerate}
+
+\section{Implementação em Python}
+
+O código a seguir automatiza os cálculos das métricas, execuções dos testes não-paramétricos e geração dos estimadores de tamanho de efeito:
+
+\begin{lstlisting}[language=Python, caption={Script de automação dos experimentos estatísticos.}]
+import numpy as np
+from scipy import stats
+
+def compute_iou(mask_true, mask_pred):
+    """Calcula o IoU no range [0, 1]."""
+    intersection = np.logical_and(mask_true, mask_pred).sum()
+    union = np.logical_or(mask_true, mask_pred).sum()
+    if union == 0:
+        return 1.0  # Sem sal no ground truth e predito sem sal
+    return float(intersection) / float(union)
+
+def compute_area_bias(mask_true, mask_pred):
+    """
+    Mede o erro relativo de area:
+    > 0: superestimacao, < 0: subestimacao.
+    """
+    area_true = mask_true.sum()
+    area_pred = mask_pred.sum()
+    if area_true == 0:
+        return np.nan
+    return float(area_pred - area_true) / float(area_true)
+
+# =========================================================================
+# EXPERIMENTO A: Wilcoxon Signed-Rank Test (Pareado, n=800)
+# =========================================================================
+def run_experiment_a(iou_base, iou_aug):
+    """
+    iou_base: IoU da rede treinada so com reais (800 imagens)
+    iou_aug:  IoU da rede treinada com enriquecimento (800 imagens)
+    """
+    iou_base = np.asarray(iou_base)
+    iou_aug = np.asarray(iou_aug)
+    diff = iou_aug - iou_base
+    
+    # Wilcoxon unilateral: H1 e iou_aug > iou_base
+    stat, p_val = stats.wilcoxon(iou_aug, iou_base, alternative='greater')
+    
+    median_base = np.median(iou_base)
+    iqr_base = stats.iqr(iou_base)
+    median_aug = np.median(iou_aug)
+    iqr_aug = stats.iqr(iou_aug)
+    median_diff = np.median(diff)
+    
+    # Rank-biserial correlation
+    non_zero = diff[diff != 0]
+    ranks = stats.rankdata(np.abs(non_zero))
+    w_pos = np.sum(ranks[non_zero > 0])
+    w_neg = np.sum(ranks[non_zero < 0])
+    r_rb = (w_pos - w_neg) / (w_pos + w_neg) if (w_pos + w_neg) > 0 else 0.0
+
+    print("=== EXPERIMENTO A (Wilcoxon Pareado) ===")
+    print(f"Mediana IoU Base: {median_base:.4f} (IQR: {iqr_base:.4f})")
+    print(f"Mediana IoU Enriquecida: {median_aug:.4f} (IQR: {iqr_aug:.4f})")
+    print(f"Mediana da Diferenca: {median_diff:+.4f}")
+    print(f"Estatistica W: {stat:.2f}, p-valor: {p_val:.4e}")
+    print(f"Tamanho do Efeito (Rank-biserial r): {r_rb:.4f}")
+    return {"stat": stat, "p_value": p_val, "r_rb": r_rb}
+
+# =========================================================================
+# EXPERIMENTO B: Mann-Whitney U (Nao-pareado: 800 reais x 1200 sinteticas)
+# =========================================================================
+def run_experiment_b(area_bias_real, area_bias_synth):
+    """
+    area_bias_real:  Delta Area no teste real (n=800)
+    area_bias_synth: Delta Area nas sinteticas (m=1200)
+    """
+    area_bias_real = np.asarray(area_bias_real)
+    area_bias_synth = np.asarray(area_bias_synth)
+    
+    # Mann-Whitney bilateral
+    u_stat, p_val = stats.mannwhitneyu(area_bias_real, area_bias_synth, 
+                                       alternative='two-sided')
+    
+    n_real = len(area_bias_real)
+    m_synth = len(area_bias_synth)
+    
+    cles = u_stat / (n_real * m_synth)
+    r_rb = 1.0 - (2.0 * u_stat) / (n_real * m_synth)
+
+    print("\n=== EXPERIMENTO B (Mann-Whitney U - Vies de Area) ===")
+    print(f"Mediana Vies Real (n={n_real}): {np.median(area_bias_real):+.4f}")
+    print(f"Mediana Vies Sintetico (m={m_synth}): {np.median(area_bias_synth):+.4f}")
+    print(f"Estatistica U: {u_stat:.2f}, p-valor: {p_val:.4e}")
+    print(f"CLES: {cles:.4f}")
+    print(f"Rank-biserial r: {r_rb:.4f}")
+    return {"u_stat": u_stat, "p_value": p_val, "cles": cles, "r_rb": r_rb}
+\end{lstlisting}
+
+\section{Diretrizes para Redação no IEEE Access}
+
+\begin{enumerate}
+    \item \textbf{Estatísticas Descritivas Robustas}: Como as distribuições de IoU e área em segmentação sísmica frequentemente violam normalidade, deve-se sempre reportar a \textit{Mediana} e o \textit{Intervalo Interquartil} (IQR), e não apenas média e desvio-padrão.
+    \item \textbf{Tamanho de Efeito}: Em consonância com as boas práticas editoriais do IEEE, nunca baseie a conclusão unicamente no $p$-valor. O relato do tamanho de efeito (correlação bisserial $r$ e CLES) é indispensável para demonstrar a relevância prática do enriquecimento com imagens sintéticas.
+    \item \textbf{Visualização Gráfica}:
+    \begin{itemize}
+        \item Para o Experimento A: Recomenda-se um gráfico de dispersão com linha de identidade ($y = x$) ou \textit{Raincloud plot} pareado para explicitar o ganho por imagem.
+        \item Para o Experimento B: Recomenda-se a Curva Cumulativa Empírica (ECDF) ou Boxplot comparativo de $\Delta\text{Area}_{\text{real}}$ vs. $\Delta\text{Area}_{\text{synth}}$.
+    \end{itemize}
+\end{enumerate}
+
+\end{document}
