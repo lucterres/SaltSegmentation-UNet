@@ -1,4 +1,5 @@
 # Pesos de modelos treinados (arquivos grandes)
+resultsHPC
 results/scenario*
 results/old
 # Histórico e curvas (gerados automaticamente)

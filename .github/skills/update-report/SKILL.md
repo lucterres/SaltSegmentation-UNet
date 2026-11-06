@@ -1,7 +1,8 @@
 ---
-description: Atualiza o relatório final após novos experimentos, preenchendo as seções 2, 3, 12 e Conclusão com os resultados do result.csv.
+name: update-report
+description: "Atualiza o relatório final após novos experimentos, preenchendo as seções 2, 3, 12 e Conclusão com os resultados do result.csv."
+disable-model-invocation: true
 ---
-
 # Atualizar Relatório Final — R2.1
 
 ## Arquivo a editar

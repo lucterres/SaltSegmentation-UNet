@@ -1,7 +1,8 @@
 ---
-description: Executa um experimento de treinamento (Cenário A ou B) no cluster Atena com seed e dataset configuráveis.
+name: run-experiment
+description: "Executa um experimento de treinamento (Cenário A ou B) no cluster Atena com seed e dataset configuráveis."
+disable-model-invocation: true
 ---
-
 # Rodar Experimento — R2.1
 
 ## Pré-condições
