@@ -71,6 +71,22 @@ Fonte sintética: `dataset/pairs1600_seismic.tar` → `dataset/geometric1600_sei
 | 456 | 3198 | 955 | 0.4179 | 0.4540 | 0.4365 | 53 | 739 |
 | **Média** |  |  | **0.4204** | **0.4571** |  | **51.3** |  |
 
+### 2.5 Teste A — análise pareada por imagem (N real = 1200)
+
+Foram comparados os checkpoints seed 42 já treinados nos cenários A (somente reais) e B
+(reais + 1200 sintéticos `pairs1600_seismic_ns1200`) sobre o mesmo test set canônico de
+800 imagens. Não houve novo treinamento. O Wilcoxon signed-rank unilateral (`B > A`,
+`alpha=0.05`) resultou em `W=70464`, `p=4.448e-13` e correlação bisserial por postos
+`r=0.3888`. A análise é por imagem e não deve ser confundida com as médias por run/seeds
+nas tabelas anteriores.
+
+Embora a diferença média de IoU tenha sido `+0.0293`, a mediana foi `0`; somente 298/800
+imagens favoreceram B, 152 favoreceram A e 350 empataram. As diferenças são fortemente
+assimétricas (Shapiro-Wilk `p=8.833e-39`, skewness `2.796`), portanto o resultado do
+Wilcoxon não confirma a hipótese de aumento da mediana. Além disso, 313 máscaras vazias
+resultaram em diferença de IoU zero pela convenção `union + epsilon` do código de treino.
+Detalhes, contagens e artefatos estão em [Relatório do Teste A pareado](relatorio-teste-pareado-teste-a.md).
+
 ---
 
 ## 3. Comparação principal — Cenário A vs Cenário B
@@ -117,6 +133,12 @@ Resumo qualitativo:
 4. Mesmo assim, o melhor cenário sintético (**B + 955 sísmicos**) ainda ficou levemente abaixo do cenário **A**.
 
 Isso sugere que a **distribuição dos sintéticos importa**: dados sintéticos mais próximos do domínio sísmico real reduzem a degradação, mas ainda não produzem ganho líquido sobre o baseline com dados reais apenas.
+
+O Teste A pareado dos checkpoints seed 42 com `N real=1200` encontrou diferença média
+positiva, mas mediana zero, maioria de empates/perdas e diferenças assimétricas. Assim,
+seu p-valor unilateral não deve ser apresentado como confirmação de ganho mediano; a
+convenção da IoU para máscaras vazias também limita a interpretação. Consulte o
+[relatório detalhado do Teste A](relatorio-teste-pareado-teste-a.md).
 
 ---
 
@@ -444,6 +466,11 @@ Esta seção compara o efeito da **filtragem do dataset de treino** mantendo o *
 | `subset_10_90` | **0.8340** | **0.8943** | filtrado (10–90%) |
 
 > **Nota:** o IoU de 0.83 do `subset_10_90` é medido num test set **sem casos triviais**, o que explica o valor muito superior — métricas incomparáveis entre si. O test canônico (800 amostras reais) é o benchmark correto para comparação com o paper.
+
+> **Nota sobre o Teste A pareado:** esta análise usa os 800 IDs canônicos para comparar
+> por imagem dois checkpoints já existentes (`N real=1200`, seed 42); ela não é um novo
+> run e, por isso, não acrescenta linha à tabela de runs por dataset de treino. Consulte
+> [o relatório estatístico](relatorio-teste-pareado-teste-a.md).
 
 ## 6.1 Comparação adicional — dataset filtrado `1–99%` vs dataset não filtrado
 
